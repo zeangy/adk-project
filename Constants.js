@@ -20,7 +20,8 @@ var EMAIL_TEMPLATES = {
   "French Broker Commitment" : "7b874147-2b53-4de5-86dd-90a8e94150ce",
   "Solicitor Instructions" : "9feeda50-eb76-41d3-b192-c83734a16ddf",
   //"QC Notary Instructions" : "211389b3-1006-4290-b7fb-e6cc2a37ffde",
-  "Short Approval Request" : "9005f9a7-f78b-4ace-98d6-232612b8978c"
+  "Short Approval Request" : "9005f9a7-f78b-4ace-98d6-232612b8978c", 
+  "Flinks" : "4a59462f-ba96-40aa-8d09-e6fb8011eb1c"
 };
 
 var EXPIRY_TEMPLATES = {
