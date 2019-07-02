@@ -409,7 +409,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   ( response.referral_source ? header.setSubtitle("Broker: "+response.referral_source.subtitle) : "");
 
   if(customTitle){
-    header.setSubtitle(customTitle+" | Broker: "+response.referral_source.subtitle);
+    header.setSubtitle(customTitle+" | Broker: "+(response.referral_source && response.referral_source.subtitle ? response.referral_source.subtitle : "NOT SET"));
     header.setImageUrl(IMAGES.UPDATE);
   }
   else{
@@ -676,6 +676,11 @@ function buildQuickLinksCard(e){
       .setFunctionName("buildQuickLinksCard")
       .setParameters({'applicationId':applicationId, 'reload':"true"})));
       */
+  var cutoff = 1400;
+  if(applicantGoogleSearchLink.length > cutoff){
+    applicantGoogleSearchLink = applicantGoogleSearchLink.substring(0, cutoff);
+    section.addWidget(CardService.newTextParagraph().setText("<b>**URL too long, link has been truncated**</b>"));
+  }
   section.addWidget(CardService.newTextButton()
     .setText("4. Applicant Google Search")
     .setOpenLink(CardService.newOpenLink()
@@ -781,7 +786,10 @@ function updateStatus(e){
     return passedCard(applicationId, statusString);
   }
   else{
-    LendeskAPILibrary.updateLendeskStatus(applicationId, statusString);
+    var response = LendeskAPILibrary.updateLendeskStatus(applicationId, statusString);
+    if(!response){
+      return buildApplicationDetailsCard(e, "**STATUS UPDATE FAILED**", false);
+    }
   }
   
 
@@ -851,8 +859,13 @@ function setPassedStatus(e){
   Logger.log(statusId);
   Logger.log(endStateReasonId);
   Logger.log(description);
-  LendeskAPILibrary.setEndState(applicationId, statusId, endStateReasonId, description);
-  return buildApplicationDetailsCard(e, "", false);
+  var response = LendeskAPILibrary.setEndState(applicationId, statusId, endStateReasonId, description);
+  if(!response){
+    return buildApplicationDetailsCard(e, "**STATUS UPDATE FAILED**", false);
+  }
+  else{
+    return buildApplicationDetailsCard(e, "", false);
+  }
 }
 
 function updateLendeskTasks(e){
