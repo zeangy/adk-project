@@ -11,6 +11,7 @@ var LENDESK_STATUS_ARRAY = LendeskAPILibrary.LENDESK_STATUS_ARRAY;
 
 var EMAIL_TEMPLATES = {
   "Underwriting Summary" : "48b298ac-a08d-4444-8735-8169a7aedf1f",
+  "Appraisal Summary" : "1a7d17de-1136-4424-ac06-bc6f096e565a",
   // "File Processed" : "d61b205b-4a0c-4255-a7c3-8c39cc58891b",
   "Broker Remaining Conditions" : "54f6969b-943f-4a42-9ea5-2a69b888e5b5",
   "Broker Quote" : "81d82a49-4d9a-47df-bce1-338be9ef761e",
