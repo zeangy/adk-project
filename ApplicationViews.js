@@ -11,7 +11,8 @@ function getApprovalApplications() {
   var statusList = [
     LENDESK_STATUS_ARRAY["3. Received Commitment"],
     LENDESK_STATUS_ARRAY["4. Instructed"],
-    LENDESK_STATUS_ARRAY["5. Funded"]
+    LENDESK_STATUS_ARRAY["5. Funds Requested"],
+    LENDESK_STATUS_ARRAY["6. Funded"]
   ];
   
   var response = LendeskAPILibrary.searchApplicationsByStatus(statusList);
