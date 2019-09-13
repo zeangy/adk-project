@@ -73,7 +73,8 @@ function addToFolder(e){
   }
   else{
     Logger.log("created new folder");
-    destFolder = dealsInProgressFolder.createFolder(folderName);  
+    destFolder = dealsInProgressFolder.createFolder(folderName);
+    DriveApp.getFileById("1L1PFw7O1kd1JxllEVJzJDNiMWk2iNYa4qMXmI8NanJ8").makeCopy("UW Checklist - "+folderName, destFolder);
     folderStatus = "Folder Created!";
   }
   
