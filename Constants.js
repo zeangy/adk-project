@@ -2,15 +2,16 @@ var EMAIL = Session.getActiveUser().getEmail().split("@")[0]+"@neighbourhoodhold
 
 var PIPELINE = {
   "SHEET_ID" : "1t154w6JFoxbnd26bKLOvnm7_tn8ta-sKj6pFSz0qPnw",
-  "SHEET_NAME" : "Deal Pipeline",
-  "SORT_RANGE" : "A3:AH99",
-  "ID_RANGE" : "AB1:AB99"
+  "SHEET_NAME" : "Lendesk Deal Pipeline",
+  "SORT_RANGE" : "A3:AH",
+  "ID_RANGE" : "AB:AB"
 };
 
 var LENDESK_STATUS_ARRAY = LendeskAPILibrary.LENDESK_STATUS_ARRAY;
 
 var EMAIL_TEMPLATES = {
   "Underwriting Summary" : "48b298ac-a08d-4444-8735-8169a7aedf1f",
+  "DCA Email" : "720ac748-bc4a-43ef-976f-77af0b21960f",
   "Appraisal Summary" : "1a7d17de-1136-4424-ac06-bc6f096e565a",
   // "File Processed" : "d61b205b-4a0c-4255-a7c3-8c39cc58891b",
   "Broker Remaining Conditions" : "54f6969b-943f-4a42-9ea5-2a69b888e5b5",
@@ -61,6 +62,10 @@ var LENDESK_USERS = {
   "Valerie": {
     "name" : "Valerie",
     "colour" : "#42f4d1"
+  },
+  "Janwyn": {
+    "name" : "Janwyn",
+    "colour" : "#010494"
   }
 };
 

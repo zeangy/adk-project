@@ -208,10 +208,10 @@ function pipelineStatusSection(lendeskId){
 function buildDisplayPipelineCard(){
   //PropertiesService.getUserProperties().deleteProperty("CURRENT_APPLICATION");
   
-  var header = CardService.newCardHeader().setTitle("Pipeline Applications List").setImageUrl(IMAGES.GOOGLE_SHEET);
+  var header = CardService.newCardHeader().setTitle("Pipeline Applications List").setImageUrl(IMAGES.GOOGLE_SHEET).setSubtitle("Max 100 applications displayed");
   var card = CardService.newCardBuilder()
     .setHeader(header)
-    .addSection(displayPipelineSection());
+    .addSection(displayPipelineSection())
   return card.build();
 }
 
@@ -250,23 +250,23 @@ function buildDisplayMyDealsCard(){
 }
 
 function displayPipelineSection(){
-  var section = CardService.newCardSection();
-  var pipelineSheet = SpreadsheetApp.openById("1t154w6JFoxbnd26bKLOvnm7_tn8ta-sKj6pFSz0qPnw").getSheetByName("Lendesk Deal Pipeline");
+  
+  var pipelineSheet = SpreadsheetApp.openById(PIPELINE.SHEET_ID).getSheetByName(PIPELINE.SHEET_NAME);
   var idRange = pipelineSheet.getRange('AB3:AB').getValues();
   var nameStatusRange = pipelineSheet.getRange('A3:B').getValues();
   
-  for(var i = 0; i < idRange.length-2; i++){
-    Logger.log(i);
+  var section = CardService.newCardSection();
+  for(var i = 0; i <100; i++){
     if(idRange[i][0] != ""){
-      section.addWidget(CardService.newKeyValue()
+        section.addWidget(CardService.newKeyValue()
         .setTopLabel(nameStatusRange[i][1])
         .setContent(nameStatusRange[i][0])
         .setOnClickAction(CardService.newAction().setFunctionName('onApplicationClick').setParameters({'applicationId':idRange[i][0]})));
     }
   }
-  
   return section;
 }
+
 function buildApplicationSearchCard(){
    var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader()
@@ -426,7 +426,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   
   var fontColour = (response.owner && LENDESK_USERS[response.owner.first_name] && LENDESK_USERS[response.owner.first_name].colour ? LENDESK_USERS[response.owner.first_name].colour : "#000000"); 
   var section = CardService.newCardSection()
-    .setHeader("<font color=\""+fontColour+"\">Deal Lead: "+response.owner.name+"</font>"+(referralCategory ? "<font color=\"#70767f\">Category: "+referralCategory+"</font>" : ""));  
+    .setHeader("<font color=\""+fontColour+"\">Deal Lead: "+response.owner.name+"</font>"+(referralCategory ? "<br><font color=\"#70767f\">Category: "+referralCategory+"</font>" : ""));  
   
   var statusList = LendeskAPILibrary.STATUS_NAME_LIST;//["1. Lead", "2. Sent Commitment", "3. Received Commitment", "4. Instructed", "5. Funded", "Complete", "Declined", "Cancelled"];
   
