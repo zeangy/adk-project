@@ -150,7 +150,8 @@ function composeFromTemplate(e){
   
   var response = renderEmailTemplate(applicationId, templateId);
   
-  var rendered_body = response.rendered_body;
+  // fix issue as of Jan 31 2020
+  var rendered_body = response.rendered_body+"<br>";
   var rendered_subject = response.rendered_subject;
   
   //Logger.log(e);

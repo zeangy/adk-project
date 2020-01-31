@@ -103,7 +103,7 @@ function buildUpdatePropertyCard(e){
   propertySection.addWidget(CardService.newTextInput()
         .setFieldName("legalAddress")
         .setTitle("Legal Address")
-        .setValue(args["legalAddress"]));   
+        .setValue((args["legalAddress"] || ""))); // fix issue as of Jan 31 2020
   
   propertySection.addWidget(CardService.newTextButton()
     .setText("Save Changes")

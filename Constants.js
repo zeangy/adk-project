@@ -65,7 +65,7 @@ var LENDESK_USERS = {
   },
   "Janwyn": {
     "name" : "Janwyn",
-    "colour" : "#010494"
+    "colour" : "#002a61"
   }
 };
 
