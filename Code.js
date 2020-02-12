@@ -855,7 +855,7 @@ function setPassedStatus(e){
   var applicationId = e.parameters.applicationId;
   var statusId = LendeskAPILibrary.LENDESK_STATUS_ARRAY[e.formInputs.status_selection_field[0]];
   var endStateReasonId = e.formInputs.end_state_reason[0];
-  var description = e.formInputs.description[0];
+  var description = (e.formInputs.description ? e.formInputs.description[0] : "");
   
   Logger.log(applicationId);
   Logger.log(statusId);
@@ -906,7 +906,7 @@ function updateLendeskTasks(e){
 function updatePipelineNote(e){
   var taskId = e.parameters.taskId;
   var applicationId = e.parameters.applicationId;
-  var note = e.formInputs["pipelineNote"][0];
+  var note = (e.formInputs["pipelineNote"] ? e.formInputs["pipelineNote"][0] : "");
   
   if(note.trim().length < 1){
     note = "-";
