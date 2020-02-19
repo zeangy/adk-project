@@ -904,8 +904,8 @@ function updateLendeskTasks(e){
 }
 
 function updatePipelineNote(e){
-  var taskId = e.parameters.taskId;
-  var applicationId = e.parameters.applicationId;
+  var taskId = (e.parameters.taskId ? e.parameters.taskId : "");
+  var applicationId = (e.parameters.applicationId ? e.parameters.applicationId : "");
   var note = (e.formInputs["pipelineNote"] ? e.formInputs["pipelineNote"][0] : "");
   
   if(note.trim().length < 1){
