@@ -31,10 +31,14 @@ function returnToMyDeals(){
  */
 function buildAddOn(e) {
   // Activate temporary Gmail add-on scopes.
-  var accessToken = e.messageMetadata.accessToken;
+  try{
+    var accessToken = e.messageMetadata.accessToken;
+    
+    GmailApp.setCurrentMessageAccessToken(accessToken);
+  }
   
-  GmailApp.setCurrentMessageAccessToken(accessToken);
-  
+  catch(err){
+  }
   return buildApplicationSearchCard();
 }
 
@@ -160,7 +164,7 @@ function composeFromTemplate(e){
   
   var draft = null;
   
-  if(draftType == "reply"){
+  if(draftType == "reply" && e.messageMetadata.messageId){
     // GmailApp.getMessageById(e.threadId);
     
     var message = GmailApp.getMessageById(e.messageMetadata.messageId);
@@ -188,6 +192,7 @@ function emailTemplateSelectionInput(){
 }
 
 function emailTemplateButton(applicationId){
+
   var buttonSet = CardService.newButtonSet()
     .addButton(CardService.newTextButton()
       .setComposeAction(CardService.newAction().setFunctionName("composeFromTemplate").setParameters({'applicationId':applicationId, 'type':'reply'}), CardService.ComposedEmailType.REPLY_AS_DRAFT)

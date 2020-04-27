@@ -4,11 +4,23 @@
     "libraries": [{
       "userSymbol": "LendeskAPILibrary",
       "libraryId": "1vQVldPNzgY24feNNiQmu7t8OsUI4N0DBCW00hrgKrzT_xzJojRfpV90M",
-      "version": "66"
+      "version": "69"
     }]
   },
-  "oauthScopes": ["https://www.googleapis.com/auth/gmail.addons.execute", "https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.compose", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/documents", "https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/script.external_request", "https://www.googleapis.com/auth/script.storage", "https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/datastore"],
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/gmail.addons.execute", 
+    "https://www.googleapis.com/auth/gmail.readonly",
+    "https://www.googleapis.com/auth/gmail.compose", 
+    "https://www.googleapis.com/auth/spreadsheets", 
+    "https://www.googleapis.com/auth/documents", 
+    "https://www.googleapis.com/auth/drive", 
+    "https://www.googleapis.com/auth/script.external_request", 
+    "https://www.googleapis.com/auth/script.storage", 
+    "https://www.googleapis.com/auth/cloud-platform", 
+    "https://www.googleapis.com/auth/datastore", 
+    "https://www.googleapis.com/auth/userinfo.email"],
   "urlFetchWhitelist": ["https://api.lendesk.com/", "https://script.google.com/", "https://www.googleapis.com/"],
+  "runtimeVersion": "V8",
   "gmail": {
     "name": "Lendesk Portal",
     "logoUrl": "http://files.conconi.ca/lendesk_logo.png",
@@ -17,6 +29,7 @@
       },
       "onTriggerFunction": "buildAddOn"
     }],
+    "homepageTrigger": { "runFunction": "buildAddOn" },
     "universalActions": [{
       "text": "Main Menu",
       "runFunction": "returnToMainMenu"
