@@ -505,19 +505,18 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
        );
   }
 
-    
+  var appraisalValue = null;
+  var appraisalDate = new Date();
+  
   for(var i in collateral_list){
-    var appraisalValue = null;
-    var appraisalDay = "";
-    var appraisalMonth = "";
-    var appraisalYear = "";
+    
     var property_values = collateral_list[i]["property_detail"]["values"];
     for (var j in property_values){
       if (property_values[j]["value_type"] == "appraised_value"){
         appraisalValue = property_values[j]["value"];
-        appraisalDay = property_values[j]["day"];
-        appraisalMonth = property_values[j]["month"];
-        appraisalYear = property_values[j]["year"];
+        if(property_values[j]["year"] && property_values[j]["month"] && property_values[j]["day"]){
+          appraisalDate = new Date(property_values[j]["year"], property_values[j]["month"]-1, property_values[j]["day"]);
+        }
       }
     }
     
@@ -528,9 +527,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
       'collateralDescription': (collateral_list[i].description ? collateral_list[i].description : ""),
       'legalAddress': (collateral_list[i].property_detail.legal_address ? collateral_list[i].property_detail.legal_address : ""),
       'appraisalValue': (appraisalValue ? appraisalValue.toString() : ""), 
-      'appraisalDay': (appraisalDay ? appraisalDay.toString() : currentDate.getDate().toString()), 
-      'appraisalMonth': (appraisalMonth ? appraisalMonth.toString() : (1+currentDate.getMonth()).toString()),
-      'appraisalYear': (appraisalYear ? appraisalYear.toString() : currentDate.getFullYear().toString())
+      'appraisalDate': appraisalDate.getTime().toString()
     };
     
     section.addWidget(CardService.newKeyValue()
@@ -561,8 +558,9 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     if(tasks[i].assignee_id != LendeskAPILibrary.PIPELINE_NOTE_ID){
      
       // May 1 2018 - google changed style of checkboxes
+      // April 2020 - google changed style back but still too difficult to read when size not reduced
       var fullDescription = tasks[i]["description"].toString();
-      var description = fullDescription.substring(0,48)+(fullDescription.length > 48 ? "..." : "");
+      var description = fullDescription.substring(0,70)+(fullDescription.length > 70 ? "..." : ""); 
       checkboxGroup.addItem(description, tasks[i]["id"], tasks[i]["completed"]);
       if(tasks[i]["completed"]){
         checked[tasks[i]["id"].toString()] = tasks[i]["completed"].toString();
@@ -737,15 +735,21 @@ function buildQuickLinksCard(e){
 function submitPropertyUpdate(e){
 
   var oldValues = e.parameters;
-  var newValues = e.formInputs;
-  Logger.log(oldValues);
-  Logger.log(newValues);
+  var newValues = e.commonEventObject.formInputs;
+  var newAppraisalValue = newValues.appraisalValue.stringInputs.value;
+  var newDate = new Date(newValues.appraisalDate.dateInput.msSinceEpoch);
+  newDate.setTime( newDate.getTime() + newDate.getTimezoneOffset()*60*1000 );
+  newDate.setHours(0,0,0,0);
   
-  if(oldValues.appraisalValue != newValues.appraisalValue){
-    LendeskAPILibrary.updateLendeskPropertyValue(oldValues.collateralId, newValues.appraisalValue, newValues.appraisalDay, newValues.appraisalMonth, newValues.appraisalYear);
+  var legalAddress = newValues.legalAddress.stringInputs.value;
+  
+  var oldDate = oldValues["appraisalDate"];
+    
+  if(oldValues.appraisalValue != newAppraisalValue || parseInt(oldDate) != newDate.getTime()){
+    LendeskAPILibrary.updateLendeskPropertyValue(oldValues.collateralId, newAppraisalValue, newDate.getDate(), newDate.getMonth()+1, newDate.getFullYear());
   }
-  if(newValues.legalAddress && oldValues.legalAddress != newValues.legalAddress){
-    LendeskAPILibrary.updateLendeskLegalAddress(oldValues.collateralId, newValues.legalAddress);
+  if(legalAddress && oldValues.legalAddress != legalAddress){
+    LendeskAPILibrary.updateLendeskLegalAddress(oldValues.collateralId, legalAddress);
   }
 
   return buildApplicationDetailsCard(e, "", false);

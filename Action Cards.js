@@ -66,39 +66,12 @@ function buildUpdatePropertyCard(e){
     .setTitle("Appraisal Value")
     .setValue((args["appraisalValue"] ? args["appraisalValue"] : "")));     
   
-  var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-  
-  var monthDropdown = CardService.newSelectionInput()
-    .setType(CardService.SelectionInputType.DROPDOWN)
-    .setFieldName("appraisalMonth")
-    .setTitle("Month");
+  var datePicker = CardService.newDatePicker()
+    .setTitle("Appraisal Date")
+    .setFieldName("appraisalDate")
+    .setValueInMsSinceEpoch(args["appraisalDate"]);
     
-  for(var i in months){
-    monthDropdown.addItem(months[i], +i + 1, (args["appraisalMonth"] == +i + 1));
-  }
-  
-  var dayDropdown = CardService.newSelectionInput()
-    .setType(CardService.SelectionInputType.DROPDOWN)
-    .setFieldName("appraisalDay")
-    .setTitle("Day");
-    
-  for(var i = 1; i <= 31; i++){
-    dayDropdown.addItem(i.toString(), i, (args["appraisalDay"] == i));
-  }
-  
-  var yearDropdown = CardService.newSelectionInput()
-    .setType(CardService.SelectionInputType.DROPDOWN)
-    .setFieldName("appraisalYear")
-    .setTitle("Year");
-  
-  var currentYear = new Date().getYear();
-  for(var i = 0; i < 5; i++){
-    yearDropdown.addItem((currentYear - i).toString(), currentYear - i, (args["appraisalYear"] == currentYear - i));
-  }
-  
-  propertySection.addWidget(monthDropdown);
-  propertySection.addWidget(dayDropdown);
-  propertySection.addWidget(yearDropdown);
+  propertySection.addWidget(datePicker);
   
   propertySection.addWidget(CardService.newTextInput()
         .setFieldName("legalAddress")
