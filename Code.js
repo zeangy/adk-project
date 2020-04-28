@@ -32,7 +32,7 @@ function returnToMyDeals(){
 function buildAddOn(e) {
   // Activate temporary Gmail add-on scopes.
   try{
-    var accessToken = e.messageMetadata.accessToken;
+    var accessToken = e.gmail.accessToken;
     
     GmailApp.setCurrentMessageAccessToken(accessToken);
   }
@@ -64,7 +64,7 @@ function buildMainMenuCards(){
  * 
  */
 function addToFolder(e){
-  var message = GmailApp.getMessageById(e.messageMetadata.messageId);
+  var message = GmailApp.getMessageById(e.gmail.messageId);
   var folderName = e.parameters["name"];
   var dealsInProgressFolder = DriveApp.getFolderById("0B8H4kqo6F4_Wfm1uSmVKeDRud0p5TWFsZ215S3RLbXoxRzJsN1VoSlVpeW1IX3p4alVla1U");
   var destFolder = dealsInProgressFolder;
@@ -164,10 +164,8 @@ function composeFromTemplate(e){
   
   var draft = null;
   
-  if(draftType == "reply" && e.messageMetadata.messageId){
-    // GmailApp.getMessageById(e.threadId);
-    
-    var message = GmailApp.getMessageById(e.messageMetadata.messageId);
+  if(draftType == "reply" && e.gmail && e.gmail.messageId){    
+    var message = GmailApp.getMessageById(e.gmail.messageId);
     draft = message.createDraftReplyAll("", {htmlBody:rendered_body, from:EMAIL});
   }
   else{
