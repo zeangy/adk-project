@@ -25,45 +25,44 @@
     "common" : { 
       "homepageTrigger" : {"runFunction" : "buildApplicationSearchCard"},
       "name" : "Lendesk Portal",
-      "logoUrl": "http://files.conconi.ca/lendesk_logo.png"
+      "logoUrl": "http://files.conconi.ca/lendesk_logo.png",
+      "layoutProperties" : {
+        "primaryColor": "#4285F4", 
+        "secondaryColor": "#4285F4"
+      },
+      "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/"],
+      "universalActions": [{
+        "label": "Main Menu",
+        "runFunction": "returnToMainMenu"
+      }, {
+        "label": "My Active Deals",
+        "runFunction": "returnToMyDeals"
+      }, {
+        "label": "Search Applications",
+        "runFunction": "returnToSearch"
+      }, {
+        "label": "Pipeline Applications List",
+        "runFunction": "returnToPipeline"
+      }, {
+        "label": "Location Search",
+        "runFunction": "locationSearchCard"
+      }, {
+        "label": "Send for Approval",
+        "runFunction": "getApprovalApplications"
+      }, {
+        "label": "Expiring Commitments",
+        "runFunction": "getExpiredCommitmentApplications"
+      }]
     },
     "drive":{
       "homepageTrigger" : {"runFunction" : "buildApplicationSearchCard"}
     },
     "gmail": {
-      "name": "Lendesk Portal",
-      "logoUrl": "http://files.conconi.ca/lendesk_logo.png",
       "contextualTriggers": [{
         "unconditional": {
         },
         "onTriggerFunction": "buildAddOn"
-      }],
-      "universalActions": [{
-        "text": "Main Menu",
-        "runFunction": "returnToMainMenu"
-      }, {
-        "text": "My Active Deals",
-        "runFunction": "returnToMyDeals"
-      }, {
-        "text": "Search Applications",
-        "runFunction": "returnToSearch"
-      }, {
-        "text": "Pipeline Applications List",
-        "runFunction": "returnToPipeline"
-      }, {
-        "text": "Location Search",
-        "runFunction": "locationSearchCard"
-      }, {
-        "text": "Send for Approval",
-        "runFunction": "getApprovalApplications"
-      }, {
-        "text": "Expiring Commitments",
-        "runFunction": "getExpiredCommitmentApplications"
-      }],
-      "primaryColor": "#4285F4",
-      "secondaryColor": "#4285F4",
-      "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/"],
-      "version": "TRUSTED_TESTER_V2"
+      }]
     }
   }
 }
