@@ -18,8 +18,13 @@
     "https://www.googleapis.com/auth/script.storage", 
     "https://www.googleapis.com/auth/cloud-platform", 
     "https://www.googleapis.com/auth/datastore", 
-    "https://www.googleapis.com/auth/userinfo.email"],
-  "urlFetchWhitelist": ["https://api.lendesk.com/", "https://script.google.com/", "https://www.googleapis.com/"],
+    "https://www.googleapis.com/auth/userinfo.email"
+  ],
+  "urlFetchWhitelist": [
+    "https://api.lendesk.com/", 
+    "https://script.google.com/", 
+    "https://www.googleapis.com/"
+  ],
   "runtimeVersion": "V8",
   "addOns": {
     "common" : { 
@@ -30,7 +35,11 @@
         "primaryColor": "#4285F4", 
         "secondaryColor": "#4285F4"
       },
-      "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/"],
+      "openLinkUrlPrefixes": [
+        "https://mail.google.com/", 
+        "https://app.lendesk.com/", 
+        "https://script.google.com/"
+      ],
       "universalActions": [{
         "label": "Main Menu",
         "runFunction": "returnToMainMenu"

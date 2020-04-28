@@ -172,9 +172,15 @@ function composeFromTemplate(e){
     draft = GmailApp.createDraft((e.parameters["email"] ? e.parameters["email"] : ""), rendered_subject, "", {htmlBody:rendered_body, from:EMAIL});
   }
   
-  return CardService.newComposeActionResponseBuilder()
-       .setGmailDraft(draft)
-       .build();
+  var actionResponse = null;
+  
+  if(e.commonEventObject.hostApp == "GMAIL"){
+    actionResponse = CardService.newComposeActionResponseBuilder().setGmailDraft(draft);
+  }
+  else{
+    actionResponse = CardService.newActionResponseBuilder().setNotification(CardService.newNotification().setText("Draft Created in Gmail"));
+  }
+  return actionResponse.build();
 }
 
 function emailTemplateSelectionInput(){
@@ -189,17 +195,17 @@ function emailTemplateSelectionInput(){
   return selection;
 }
 
-function emailTemplateButton(applicationId){
-
-  var buttonSet = CardService.newButtonSet()
-    .addButton(CardService.newTextButton()
+function emailTemplateButton(applicationId, replyAllOption){
+  
+  var buttonSet = CardService.newButtonSet();
+  if(replyAllOption){
+    buttonSet.addButton(CardService.newTextButton()
       .setComposeAction(CardService.newAction().setFunctionName("composeFromTemplate").setParameters({'applicationId':applicationId, 'type':'reply'}), CardService.ComposedEmailType.REPLY_AS_DRAFT)
-      //.setOnClickAction(CardService.newAction().setFunctionName("composeFromTemplate").setParameters({'applicationId':applicationId, 'type':'reply'}))
-      .setText("Reply All"))
-    .addButton(CardService.newTextButton()
-      .setComposeAction(CardService.newAction().setFunctionName("composeFromTemplate").setParameters({'applicationId':applicationId, 'type':'create'}), CardService.ComposedEmailType.STANDALONE_DRAFT)
-      //.setOnClickAction(CardService.newAction().setFunctionName("composeFromTemplate").setParameters({'applicationId':applicationId, 'type':'create'}))
-      .setText("New Draft"));
+      .setText("Reply All"));
+  }
+  buttonSet.addButton(CardService.newTextButton()
+    .setComposeAction(CardService.newAction().setFunctionName("composeFromTemplate").setParameters({'applicationId':applicationId, 'type':'create'}), CardService.ComposedEmailType.STANDALONE_DRAFT)
+    .setText("New Draft"));
   return buttonSet;
 }
 
@@ -616,8 +622,9 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   var emailSection = CardService.newCardSection()
     .setHeader("Email")
     .addWidget(emailTemplateSelectionInput())
-    .addWidget(emailTemplateButton(applicationId));
-    
+    .addWidget(emailTemplateButton(applicationId, (e.gmail && e.gmail.messageId)));
+  
+  
   card.addSection(emailSection);
   //card.addSection(folderSection);
   card.addSection(moreOptionsSection);
