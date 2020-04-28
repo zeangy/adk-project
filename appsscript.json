@@ -21,40 +21,49 @@
     "https://www.googleapis.com/auth/userinfo.email"],
   "urlFetchWhitelist": ["https://api.lendesk.com/", "https://script.google.com/", "https://www.googleapis.com/"],
   "runtimeVersion": "V8",
-  "gmail": {
-    "name": "Lendesk Portal",
-    "logoUrl": "http://files.conconi.ca/lendesk_logo.png",
-    "contextualTriggers": [{
-      "unconditional": {
-      },
-      "onTriggerFunction": "buildAddOn"
-    }],
-    "homepageTrigger": { "runFunction": "buildAddOn" },
-    "universalActions": [{
-      "text": "Main Menu",
-      "runFunction": "returnToMainMenu"
-    }, {
-      "text": "My Active Deals",
-      "runFunction": "returnToMyDeals"
-    }, {
-      "text": "Search Applications",
-      "runFunction": "returnToSearch"
-    }, {
-      "text": "Pipeline Applications List",
-      "runFunction": "returnToPipeline"
-    }, {
-      "text": "Location Search",
-      "runFunction": "locationSearchCard"
-    }, {
-      "text": "Send for Approval",
-      "runFunction": "getApprovalApplications"
-    }, {
-      "text": "Expiring Commitments",
-      "runFunction": "getExpiredCommitmentApplications"
-    }],
-    "primaryColor": "#4285F4",
-    "secondaryColor": "#4285F4",
-    "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/"],
-    "version": "TRUSTED_TESTER_V2"
+  "addOns": {
+    "common" : { 
+      "homepageTrigger" : {"runFunction" : "buildApplicationSearchCard"},
+      "name" : "Lendesk Portal",
+      "logoUrl": "http://files.conconi.ca/lendesk_logo.png"
+    },
+    "drive":{
+      "homepageTrigger" : {"runFunction" : "buildApplicationSearchCard"}
+    },
+    "gmail": {
+      "name": "Lendesk Portal",
+      "logoUrl": "http://files.conconi.ca/lendesk_logo.png",
+      "contextualTriggers": [{
+        "unconditional": {
+        },
+        "onTriggerFunction": "buildAddOn"
+      }],
+      "universalActions": [{
+        "text": "Main Menu",
+        "runFunction": "returnToMainMenu"
+      }, {
+        "text": "My Active Deals",
+        "runFunction": "returnToMyDeals"
+      }, {
+        "text": "Search Applications",
+        "runFunction": "returnToSearch"
+      }, {
+        "text": "Pipeline Applications List",
+        "runFunction": "returnToPipeline"
+      }, {
+        "text": "Location Search",
+        "runFunction": "locationSearchCard"
+      }, {
+        "text": "Send for Approval",
+        "runFunction": "getApprovalApplications"
+      }, {
+        "text": "Expiring Commitments",
+        "runFunction": "getExpiredCommitmentApplications"
+      }],
+      "primaryColor": "#4285F4",
+      "secondaryColor": "#4285F4",
+      "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/"],
+      "version": "TRUSTED_TESTER_V2"
+    }
   }
 }

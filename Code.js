@@ -369,7 +369,6 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   //PropertiesService.getUserProperties().deleteProperty("CURRENT_APPLICATION");
   //Logger.log("remove");
   //PropertiesService.getUserProperties().setProperty("CURRENT_APPLICATION", applicationId);
-  var messageId = e.messageMetadata.messageId;
   var referralCategory = e.parameters.referral_category;
   var applicationId = e.parameters.applicationId;
   
