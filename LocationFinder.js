@@ -21,7 +21,7 @@ function locationSearchCard() {
 }
 
 function locationSearchResult(e){
-  var searchQuery = e.formInput["query"].toUpperCase();
+  var searchQuery = (e.formInput["query"] ? e.formInput["query"].toUpperCase() : " ");
     
   var result = '<b><font color="#f44242">Not Eligible</font></b><br /><i>Reference list of eligible locations is not exhaustive. Please discuss with the senior underwriter if you think this location is categorized as not eligible in error.</i>';
   var image = IMAGES.FROWN;

@@ -42,7 +42,7 @@ function getApprovalApplications() {
     return y - x;
   });
   
-  return filteredApplicationCard(approvalList, "Send for Approval");
+  return filteredApplicationCard(approvalList, "Send for Approval")[0]; // April 28 2020 fix to error, revisit later
 }
 
 /** 

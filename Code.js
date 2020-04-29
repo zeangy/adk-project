@@ -456,7 +456,14 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
       .setContent(status)
     );
   }
-  
+  if(status.indexOf("Sent Commitment") >= 0 || status.indexOf("Quote") >= 0){
+    var commitmentExpiry = (response.loans[0].commitment && response.loans[0].commitment.expiry_date ? response.loans[0].commitment.expiry_date : "");
+    commitmentExpiry = (commitmentExpiry ? Utilities.formatDate(new Date(commitmentExpiry), "PST", "MMMM d, yyyy") : "");
+    section.addWidget(CardService.newKeyValue()
+      .setTopLabel("Commitment Expiry")
+      .setContent(commitmentExpiry)
+    );
+  }
   if(response.applicants.length > 1){
     for(var i = 1; i<response.applicants.length; i++){
      name += ", "+response.applicants[i].name; 
@@ -579,12 +586,6 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     section.addWidget(checkboxGroup);
   }
   
-  /*
-  section.addWidget(CardService.newKeyValue()
-    .setTopLabel("Commitment Expiry")
-    .setContent((response.commitmentExpiry ? response.commitmentExpiry : ""))
-  );
-  */
   section.addWidget(CardService.newTextInput()
     .setFieldName("pipelineNote")
     .setTitle("Pipeline Note")
