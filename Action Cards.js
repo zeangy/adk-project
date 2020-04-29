@@ -1,3 +1,68 @@
+/*
+ * Update commitment expiry and return to application card
+ *
+ * @param {EventObject} e
+ * @returns {Card}
+ */
+function submitCommitmentUpdate(e){
+  var parameters = e.commonEventObject.parameters;
+  var formInputs = e.commonEventObject.formInputs;
+  var loanId = parameters.loanId;
+  var message = "";
+  
+  try{
+    var expiryDate = msSinceEpochToDate(formInputs.commitmentExpiryDate.dateInput.msSinceEpoch);
+    LendeskAPILibrary.updateCommitmentExpiry(loanId, expiryDate);
+  }
+  catch(e){
+    message = "Error: Expiry not updated";
+  }
+  
+  return buildApplicationDetailsCard(e, message, false); 
+}
+
+/*
+ * Card for updating commitment expiry date for an application
+ *
+ * @param {EventObject} e
+ * @returns {ActionResponse}
+ */
+function buildUpdateCommitmentCard(e){
+  var parameters = e.commonEventObject.parameters;
+  var commitmentExpiry = parameters.commitmentExpiry;
+  
+  var card = CardService.newCardBuilder()
+    .setHeader(CardService.newCardHeader()
+    .setTitle("Update Commitment Details"));
+ 
+  var section = CardService.newCardSection();
+  
+  var datePicker = CardService.newDatePicker()
+    .setTitle("Commitment Expiry Date")
+    .setFieldName("commitmentExpiryDate");
+    
+  if(commitmentExpiry){
+    datePicker.setValueInMsSinceEpoch(new Date(commitmentExpiry).getTime());
+  }
+  
+  var saveButton = CardService.newTextButton()
+    .setText("Save Changes")
+    .setOnClickAction(CardService.newAction()
+      .setFunctionName("submitCommitmentUpdate").setParameters(e.commonEventObject.parameters));
+      
+  section.addWidget(datePicker);
+  section.addWidget(saveButton);
+      
+  card.addSection(section);
+
+  var actionResponse = CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation()
+       .pushCard(card.build()))
+    .build();
+    
+  return actionResponse;
+}
+
 function buildTagsCard(e){
   var args = e.parameters;
   var currentTags = args.tags.split(", ");

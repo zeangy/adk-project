@@ -4,42 +4,23 @@
     "libraries": [{
       "userSymbol": "LendeskAPILibrary",
       "libraryId": "1vQVldPNzgY24feNNiQmu7t8OsUI4N0DBCW00hrgKrzT_xzJojRfpV90M",
-      "version": "69"
+      "version": "75"
     }]
   },
-  "oauthScopes": [
-    "https://www.googleapis.com/auth/gmail.addons.execute", 
-    "https://www.googleapis.com/auth/gmail.readonly",
-    "https://www.googleapis.com/auth/gmail.compose", 
-    "https://www.googleapis.com/auth/spreadsheets", 
-    "https://www.googleapis.com/auth/documents", 
-    "https://www.googleapis.com/auth/drive", 
-    "https://www.googleapis.com/auth/script.external_request", 
-    "https://www.googleapis.com/auth/script.storage", 
-    "https://www.googleapis.com/auth/cloud-platform", 
-    "https://www.googleapis.com/auth/datastore", 
-    "https://www.googleapis.com/auth/userinfo.email"
-  ],
-  "urlFetchWhitelist": [
-    "https://api.lendesk.com/", 
-    "https://script.google.com/", 
-    "https://www.googleapis.com/"
-  ],
+  "oauthScopes": ["https://www.googleapis.com/auth/gmail.addons.execute", "https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.compose", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/documents", "https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/script.external_request", "https://www.googleapis.com/auth/script.storage", "https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/datastore", "https://www.googleapis.com/auth/userinfo.email"],
+  "urlFetchWhitelist": ["https://api.lendesk.com/", "https://script.google.com/", "https://www.googleapis.com/"],
   "runtimeVersion": "V8",
   "addOns": {
-    "common" : { 
-      "homepageTrigger" : {"runFunction" : "buildApplicationSearchCard"},
-      "name" : "Lendesk Portal",
+    "common": {
+      "name": "Lendesk Portal",
       "logoUrl": "http://files.conconi.ca/lendesk_logo.png",
-      "layoutProperties" : {
-        "primaryColor": "#4285F4", 
+      "layoutProperties": {
+        "primaryColor": "#4285F4",
         "secondaryColor": "#4285F4"
       },
-      "openLinkUrlPrefixes": [
-        "https://mail.google.com/", 
-        "https://app.lendesk.com/", 
-        "https://script.google.com/"
-      ],
+      "homepageTrigger": {
+        "runFunction": "buildApplicationSearchCard"
+      },
       "universalActions": [{
         "label": "Main Menu",
         "runFunction": "returnToMainMenu"
@@ -61,10 +42,8 @@
       }, {
         "label": "Expiring Commitments",
         "runFunction": "getExpiredCommitmentApplications"
-      }]
-    },
-    "drive":{
-      "homepageTrigger" : {"runFunction" : "buildApplicationSearchCard"}
+      }],
+      "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/"]
     },
     "gmail": {
       "contextualTriggers": [{
@@ -72,6 +51,11 @@
         },
         "onTriggerFunction": "buildAddOn"
       }]
+    },
+    "drive": {
+      "homepageTrigger": {
+        "runFunction": "buildApplicationSearchCard"
+      }
     }
   }
 }

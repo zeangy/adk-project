@@ -456,14 +456,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
       .setContent(status)
     );
   }
-  if(status.indexOf("Sent Commitment") >= 0 || status.indexOf("Quote") >= 0){
-    var commitmentExpiry = (response.loans[0].commitment && response.loans[0].commitment.expiry_date ? response.loans[0].commitment.expiry_date : "");
-    commitmentExpiry = (commitmentExpiry ? Utilities.formatDate(new Date(commitmentExpiry), "PST", "MMMM d, yyyy") : "");
-    section.addWidget(CardService.newKeyValue()
-      .setTopLabel("Commitment Expiry")
-      .setContent(commitmentExpiry)
-    );
-  }
+  
   if(response.applicants.length > 1){
     for(var i = 1; i<response.applicants.length; i++){
      name += ", "+response.applicants[i].name; 
@@ -473,6 +466,27 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     .setTopLabel("Name")
     .setContent((name ? "<font color=\"#1257e0\">"+name+"</font>" : ""))
     .setOpenLink(openInLendeskLink)); 
+  
+  if(status.indexOf("Sent Commitment") >= 0 || status.indexOf("Quote") >= 0){
+      var commitmentExpiry = (response.loans[0].commitment && response.loans[0].commitment.expiry_date ? response.loans[0].commitment.expiry_date : "");
+      var formattedCommitmentExpiry = (commitmentExpiry ? Utilities.formatDate(new Date(commitmentExpiry), "PST", "MMMM d, yyyy") : "");
+      var commitmentParameters = {
+        "applicationId":applicationId,
+        "loanId" : response.loans[0].id,
+        "commitmentExpiry" : commitmentExpiry
+      };
+      section.addWidget(CardService.newKeyValue()
+        .setTopLabel("Commitment Expiry")
+        .setContent(formattedCommitmentExpiry)
+        .setButton(CardService.newTextButton()
+          .setText("Edit")
+          .setOnClickAction(CardService.newAction()
+            .setFunctionName("buildUpdateCommitmentCard")
+            .setParameters(commitmentParameters)
+          )
+        )
+      );
+  }
   
   var dailyInterest = amount*(Math.pow(1+response.loans[0].liability.effective_annual_rate,1/365)-1);
    
@@ -738,15 +752,12 @@ function submitPropertyUpdate(e){
   var oldValues = e.parameters;
   var newValues = e.commonEventObject.formInputs;
   var newAppraisalValue = newValues.appraisalValue.stringInputs.value;
-  var newDate = new Date(newValues.appraisalDate.dateInput.msSinceEpoch);
-  newDate.setTime( newDate.getTime() + newDate.getTimezoneOffset()*60*1000 );
-  newDate.setHours(0,0,0,0);
+  var newDate = msSinceEpochToDate(newValues.appraisalDate.dateInput.msSinceEpoch);
+  var oldDate = msSinceEpochToDate(oldValues["appraisalDate"]);
   
   var legalAddress = newValues.legalAddress.stringInputs.value;
   
-  var oldDate = oldValues["appraisalDate"];
-    
-  if(oldValues.appraisalValue != newAppraisalValue || parseInt(oldDate) != newDate.getTime()){
+  if(oldValues.appraisalValue != newAppraisalValue || oldDate.getTime() != newDate.getTime()){
     LendeskAPILibrary.updateLendeskPropertyValue(oldValues.collateralId, newAppraisalValue, newDate.getDate(), newDate.getMonth()+1, newDate.getFullYear());
   }
   if(legalAddress && oldValues.legalAddress != legalAddress){
