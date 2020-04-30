@@ -467,21 +467,24 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     .setContent((name ? "<font color=\"#1257e0\">"+name+"</font>" : ""))
     .setOpenLink(openInLendeskLink)); 
   
-  if(status.indexOf("Sent Commitment") >= 0 || status.indexOf("Quote") >= 0){
+  if(status.indexOf("Sent Commitment") >= 0 || status.indexOf("Quote") >= 0 || status.indexOf("TEST") >= 0){
       var commitmentExpiry = (response.loans[0].commitment && response.loans[0].commitment.expiry_date ? response.loans[0].commitment.expiry_date : "");
-      var formattedCommitmentExpiry = (commitmentExpiry ? Utilities.formatDate(new Date(commitmentExpiry), "PST", "MMMM d, yyyy") : "");
+      var formattedCommitmentExpiry = (commitmentExpiry ? Utilities.formatDate(new Date(commitmentExpiry), "UTC", "MMMM d, yyyy") : "");
       var commitmentParameters = {
         "applicationId":applicationId,
         "loanId" : response.loans[0].id,
-        "commitmentExpiry" : commitmentExpiry
+        "currentDate" : commitmentExpiry,
+        "title" : "Update Commitment Details", 
+        "datePickerTitle" : "Commitment Expiry Date", 
+        "submitFunctionName" : "submitCommitmentUpdate"
       };
       section.addWidget(CardService.newKeyValue()
-        .setTopLabel("Commitment Expiry")
+        .setTopLabel("Commitment Expiry Date")
         .setContent(formattedCommitmentExpiry)
         .setButton(CardService.newTextButton()
           .setText("Edit")
           .setOnClickAction(CardService.newAction()
-            .setFunctionName("buildUpdateCommitmentCard")
+            .setFunctionName("buildUpdateDateCard")
             .setParameters(commitmentParameters)
           )
         )
@@ -489,10 +492,27 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   }
   
   var dailyInterest = amount*(Math.pow(1+response.loans[0].liability.effective_annual_rate,1/365)-1);
-   
+    
+  var fundingParameters = {
+    "applicationId":applicationId,
+    "loanId" : response.loans[0].id,
+    "currentDate" : (closingDate ? closingDate : ""),
+    "title" : "Update Funding Details", 
+    "datePickerTitle" : "Estimated Closing Date", 
+    "submitFunctionName" : "submitFundingUpdate"
+  };
+  
   section.addWidget(CardService.newKeyValue()
     .setTopLabel("Funding Date and Daily Interest")
-    .setContent((closingDate ? closingDate : "ASAP")+" | $"+dailyInterest.toFixed(2)));  
+    .setContent((closingDate ? Utilities.formatDate(new Date(closingDate), "UTC", "MMMM d, yyyy") : "ASAP")+" | $"+dailyInterest.toFixed(2))
+    .setButton(CardService.newTextButton()
+      .setText("Edit")
+      .setOnClickAction(CardService.newAction()
+        .setFunctionName("buildUpdateDateCard")
+        .setParameters(fundingParameters) 
+      )
+    )
+  );  
       
   section.addWidget(CardService.newKeyValue()
     .setTopLabel("Loan Amount")

@@ -11,7 +11,7 @@ function submitCommitmentUpdate(e){
   var message = "";
   
   try{
-    var expiryDate = msSinceEpochToDate(formInputs.commitmentExpiryDate.dateInput.msSinceEpoch);
+    var expiryDate = msSinceEpochToDate(formInputs.dateUpdate.dateInput.msSinceEpoch);
     LendeskAPILibrary.updateCommitmentExpiry(loanId, expiryDate);
   }
   catch(e){
@@ -20,35 +20,58 @@ function submitCommitmentUpdate(e){
   
   return buildApplicationDetailsCard(e, message, false); 
 }
+/*
+ * Update funding date and interest adjustment date and return to application card
+ * If no funding date is given, update funding date to ASAP
+ *
+ * @param {EventObject} e
+ * @returns {Card}
+ */
+function submitFundingUpdate(e){
+  var parameters = e.commonEventObject.parameters;
+  var formInputs = e.commonEventObject.formInputs;
+  var loanId = parameters.loanId;
+  var fundingDate = null;
+  
+  try{
+    fundingDate = msSinceEpochToDate(formInputs.dateUpdate.dateInput.msSinceEpoch); 
+  }
+  catch(e){
+  }
+  
+  LendeskAPILibrary.updateFundingDateDetails(loanId, fundingDate);
+  
+  return buildApplicationDetailsCard(e, "", false); 
+}
 
 /*
- * Card for updating commitment expiry date for an application
+ * Card for updating date for an application
  *
  * @param {EventObject} e
  * @returns {ActionResponse}
  */
-function buildUpdateCommitmentCard(e){
+function buildUpdateDateCard(e){
   var parameters = e.commonEventObject.parameters;
-  var commitmentExpiry = parameters.commitmentExpiry;
+  var currentDate = parameters.currentDate;
   
   var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader()
-    .setTitle("Update Commitment Details"));
+    .setTitle(parameters.title));
  
   var section = CardService.newCardSection();
   
   var datePicker = CardService.newDatePicker()
-    .setTitle("Commitment Expiry Date")
-    .setFieldName("commitmentExpiryDate");
+    .setTitle(parameters.datePickerTitle)
+    .setFieldName("dateUpdate");
     
-  if(commitmentExpiry){
-    datePicker.setValueInMsSinceEpoch(new Date(commitmentExpiry).getTime());
+  if(currentDate){
+    datePicker.setValueInMsSinceEpoch(new Date(currentDate).getTime());
   }
   
   var saveButton = CardService.newTextButton()
     .setText("Save Changes")
     .setOnClickAction(CardService.newAction()
-      .setFunctionName("submitCommitmentUpdate").setParameters(e.commonEventObject.parameters));
+      .setFunctionName(parameters.submitFunctionName).setParameters(e.commonEventObject.parameters));
       
   section.addWidget(datePicker);
   section.addWidget(saveButton);
