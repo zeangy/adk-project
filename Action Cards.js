@@ -310,6 +310,7 @@ function buildAddNotesCard(e){
   
   var brokerNotes = [];
   var underwritingNotes = [];
+  var bdmNotes = [];
   var borrowerSolicitor = [];
   
   var card = CardService.newCardBuilder()
@@ -328,6 +329,13 @@ function buildAddNotesCard(e){
       "title" : "UNDERWRITING NOTES",
       "fieldName" : "underwriting_notes_field", 
       "noteList" : underwritingNotes,
+      "currentNote" : ""
+    },
+    "bdm" : {
+      "keyWord" : "BDM NOTES",
+      "title" : "BDM NOTES",
+      "fieldName" : "bdm_notes_field", 
+      "noteList" : bdmNotes,
       "currentNote" : ""
     },
     "broker" : {
@@ -371,6 +379,8 @@ function buildAddNotesCard(e){
     "applicationId" : applicationId,
     "underwritingNote" : displayNotes["underwriting"].currentNote,
     "underwritingNoteKey" :  displayNotes["underwriting"].keyWord,
+    "bdmNote" : displayNotes["bdm"].currentNote,
+    "bdmNoteKey" :  displayNotes["bdm"].keyWord,
     "brokerNote" : displayNotes["broker"].currentNote,
     "brokerNoteKey" :  displayNotes["broker"].keyWord,
     "borrowerSolicitor" : displayNotes["borrower"].currentNote,

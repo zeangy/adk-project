@@ -798,6 +798,11 @@ function updateLendeskNotes(e){
       "keyWord" : e.parameters.brokerNoteKey
     },
     {
+      "updated" : e.formInputs.bdm_notes_field,
+      "old" : e.parameters.bdmNote,
+      "keyWord" : e.parameters.bdmNoteKey
+    },
+    {
       "updated" : e.formInputs.underwriting_notes_field,
       "old" : e.parameters.underwritingNote,
       "keyWord" : e.parameters.underwritingNoteKey
