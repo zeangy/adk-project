@@ -321,19 +321,19 @@ function buildAddNotesCard(e){
     "sales" : "BDM NOTES"
   };
   
-  var noteType = ( noteTypes[currentUserTeam] || noteTypes["underwriting"]); // default to underwriting
+  var keyWord = ( noteTypes[currentUserTeam] || noteTypes["underwriting"]); // default to underwriting
   
   var addNoteSection = CardService.newCardSection();
   
   addNoteSection.addWidget(CardService.newTextInput()
     .setMultiline(true)
-    .setTitle("ADD "+noteType)
+    .setTitle("ADD NEW "+keyWord)
     .setFieldName("note")
   );
     
   var parameters = {
     "applicationId" : applicationId,
-    "noteType" : noteType
+    "keyWord" : keyWord
   };
   
   addNoteSection.addWidget(CardService.newTextButton()
@@ -344,20 +344,21 @@ function buildAddNotesCard(e){
   
   card.addSection(addNoteSection);
   
-  for(var i in noteTypes){
-    var displayNoteSection = CardService.newCardSection().setHeader("NOTES").setCollapsible(true).setNumUncollapsibleWidgets(1);
-    for(var j in notes){
-      if(notes[j].comment.indexOf(noteTypes[i]) >= 0){
-        displayNoteSection.addWidget(CardService.newKeyValue()
-          .setTopLabel(i.toUpperCase())
-          .setContent(notes[j].comment.replace(noteTypes[i], ""))
-          .setBottomLabel("Created At: "+notes[j].created_at)
-        );
-      }
-    }
-    card.addSection(displayNoteSection);
+  var displayNoteSection = CardService.newCardSection().setHeader("BDM and Underwriting Notes").setCollapsible(true).setNumUncollapsibleWidgets(5);
+
+  for(var j in notes){
+    for(var i in noteTypes){
+        if(notes[j].comment.indexOf(noteTypes[i]) >= 0){
+          displayNoteSection.addWidget(CardService.newKeyValue()
+            .setTopLabel(i.toUpperCase())
+            .setContent(notes[j].comment.replace(noteTypes[i]+"<br>", ""))
+            .setBottomLabel("Created At: "+notes[j].created_at)
+          );
+        }
+     }
   }
   
+  card.addSection(displayNoteSection);
   
   var actionResponse = CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation()
@@ -368,8 +369,21 @@ function buildAddNotesCard(e){
 }
 
 function addLendeskNote(e){
-
-
+  var applicationId = e.commonEventObject.parameters.applicationId;
+  var keyWord = e.commonEventObject.parameters.keyWord;
+  var formInputs = e.commonEventObject.formInputs;
+  var note = (formInputs  ? formInputs.note.stringInputs.value : "");
+  var message = "Updated Notes!";
+  
+  if(note){
+    LendeskAPILibrary.createLendeskNote(applicationId, keyWord+"<br>"+note.toString().replace(/\n/g, "<br>"));
+  }
+  else{
+    message = "Error: Notes not updated";
+  }
+  
+  return buildApplicationDetailsCard(e, message, false);
+  
 }
 
 function buildUpdateNotesCard(e){
