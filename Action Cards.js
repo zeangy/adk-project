@@ -302,7 +302,12 @@ function buildUpdateLoanCard(e){
 function buildUpdateLendeskCard(e){
 
 }
-
+/*
+ * Add a new underwriting or BDM note and view all old notes
+ *
+ * @param {EventObject} e
+ * @returns {ActionResponse}
+ */
 function buildAddNotesCard(e){
   
   var applicationId = e.commonEventObject.parameters.applicationId;
@@ -314,7 +319,9 @@ function buildAddNotesCard(e){
     .setHeader(CardService.newCardHeader()
     .setTitle(title));
   
-  var currentUserTeam = LENDESK_USERS[getUserName()].team;
+  var userDetails = LENDESK_USERS[getUserName()];
+  var currentUserTeam = userDetails.team;
+  var fontColour = userDetails.colour;
   
   var noteTypes = {
     "underwriting" : "UNDERWRITING NOTES",
@@ -344,21 +351,32 @@ function buildAddNotesCard(e){
   
   card.addSection(addNoteSection);
   
-  var displayNoteSection = CardService.newCardSection().setHeader("BDM and Underwriting Notes").setCollapsible(true).setNumUncollapsibleWidgets(5);
-
+  var displayNoteSection = CardService.newCardSection().setCollapsible(true).setNumUncollapsibleWidgets(5);
+  var notesAdded = 0;
   for(var j in notes){
     for(var i in noteTypes){
         if(notes[j].comment.indexOf(noteTypes[i]) >= 0){
-          displayNoteSection.addWidget(CardService.newKeyValue()
+          var content = notes[j].comment.replace(noteTypes[i]+"<br>", "");
+          if(noteTypes[i] == keyWord){
+            content = "<b><font color=\""+fontColour+"\"> "+content+"</font></b>";
+          }
+          var noteWidget = CardService.newKeyValue()
             .setTopLabel(i.toUpperCase())
-            .setContent(notes[j].comment.replace(noteTypes[i]+"<br>", ""))
-            .setBottomLabel("Created At: "+notes[j].created_at)
-          );
+            .setContent(content)
+            .setBottomLabel("Created At: "+Utilities.formatDate(new Date(notes[j].created_at), "PST", "yyyy-MM-dd h:mm a"));
+          displayNoteSection.addWidget(noteWidget);
+          notesAdded ++;
         }
      }
   }
   
+  displayNoteSection.setHeader("BDM and Underwriting Notes ("+notesAdded+")");
+  
+  if(notesAdded < 1){
+    displayNoteSection.addWidget(CardService.newKeyValue().setContent("<i>No BDM or Underwriting notes found</i>"));
+  }
   card.addSection(displayNoteSection);
+  
   
   var actionResponse = CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation()
@@ -368,18 +386,24 @@ function buildAddNotesCard(e){
   return actionResponse;
 }
 
+/*
+ * Add a new note to Lendesk if the note is not blank
+ *
+ * @param {EventObject} e
+ * @returns {Card}
+ */
 function addLendeskNote(e){
   var applicationId = e.commonEventObject.parameters.applicationId;
   var keyWord = e.commonEventObject.parameters.keyWord;
   var formInputs = e.commonEventObject.formInputs;
   var note = (formInputs  ? formInputs.note.stringInputs.value : "");
-  var message = "Updated Notes!";
+  var message = "Created Note!";
   
   if(note){
     LendeskAPILibrary.createLendeskNote(applicationId, keyWord+"<br>"+note.toString().replace(/\n/g, "<br>"));
   }
   else{
-    message = "Error: Notes not updated";
+    message = "Error: Note not created";
   }
   
   return buildApplicationDetailsCard(e, message, false);
@@ -406,20 +430,6 @@ function buildUpdateNotesCard(e){
   });
   
   var displayNotes = {
-    "underwriting" : {
-      "keyWord" : "UNDERWRITING NOTES",
-      "title" : "UNDERWRITING NOTES",
-      "fieldName" : "underwriting_notes_field", 
-      "noteList" : underwritingNotes,
-      "currentNote" : ""
-    },
-    "bdm" : {
-      "keyWord" : "BDM NOTES",
-      "title" : "BDM NOTES",
-      "fieldName" : "bdm_notes_field", 
-      "noteList" : bdmNotes,
-      "currentNote" : ""
-    },
     "broker" : {
       "keyWord" : "BROKER NOTES",
       "title" : "BROKER NOTES",
@@ -460,10 +470,6 @@ function buildUpdateNotesCard(e){
   
   var parameters = {
     "applicationId" : applicationId,
-    "underwritingNote" : displayNotes["underwriting"].currentNote,
-    "underwritingNoteKey" :  displayNotes["underwriting"].keyWord,
-    "bdmNote" : displayNotes["bdm"].currentNote,
-    "bdmNoteKey" :  displayNotes["bdm"].keyWord,
     "brokerNote" : displayNotes["broker"].currentNote,
     "brokerNoteKey" :  displayNotes["broker"].keyWord,
     "borrowerSolicitor" : displayNotes["borrower"].currentNote,

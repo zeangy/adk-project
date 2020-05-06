@@ -437,11 +437,9 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   var section = CardService.newCardSection()
     .setHeader("<font color=\""+fontColour+"\">Deal Lead: "+response.owner.name+"</font>"+(referralCategory ? "<br><font color=\"#70767f\">Category: "+referralCategory+"</font>" : ""));  
   
-  if(status.indexOf("TEST") >= 0){
-    section.addWidget(CardService.newTextButton()
-    .setText("View / Add Notes")
+  section.addWidget(CardService.newTextButton()
+    .setText("BDM and Underwriting Notes")
     .setOnClickAction(CardService.newAction().setFunctionName("buildAddNotesCard").setParameters({'applicationId':applicationId, 'name':name})));
-  }
   
   var statusList = LendeskAPILibrary.STATUS_NAME_LIST;//["1. Lead", "2. Sent Commitment", "3. Received Commitment", "4. Instructed", "5. Funded", "Complete", "Declined", "Cancelled"];
   
@@ -642,7 +640,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     .setOnClickAction(CardService.newAction().setFunctionName("buildQuickLinksCard").setParameters({'applicationId':applicationId, 'status': status, 'folderName': getFolderName(response.applicants)})));
 
   moreOptionsSection.addWidget(CardService.newTextButton()
-    .setText("View / Add Notes")
+    .setText("Broker and Solicitor Notes")
     .setOnClickAction(CardService.newAction().setFunctionName("buildUpdateNotesCard").setParameters({'applicationId':applicationId, 'name':name})));
 
   var testOptionsSection = CardService.newCardSection()
@@ -798,16 +796,6 @@ function updateLendeskNotes(e){
   var applicationId = e.parameters.applicationId;
   
   var compare = [
-    {
-      "updated" : e.formInputs.broker_notes_field,
-      "old" : e.parameters.brokerNote,
-      "keyWord" : e.parameters.brokerNoteKey
-    },
-    {
-      "updated" : e.formInputs.bdm_notes_field,
-      "old" : e.parameters.bdmNote,
-      "keyWord" : e.parameters.bdmNoteKey
-    },
     {
       "updated" : e.formInputs.underwriting_notes_field,
       "old" : e.parameters.underwritingNote,
