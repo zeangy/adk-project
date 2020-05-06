@@ -45,30 +45,37 @@ var EXTERNAL_TEMPLATE_LIST = [
 var LENDESK_USERS = {
   "Alexandra" : {
     "name" : "Alexandra",
+    "team" : "underwriting",
     "colour" : "#ef6902"
   }, 
   "Aida" : {
     "name" : "Aida",
+    "team" : "underwriting",
     "colour" : "#ea0baf"
   }, 
   "Sasha" : {
     "name" : "Sasha",
+    "team" : "underwriting",
     "colour" : "#f4b342"
   }, 
   "Jared" : {
     "name" : "Jared",
+    "team" : "underwriting",
     "colour" : "#13a02a"
   }, 
   "Valerie": {
     "name" : "Valerie",
+    "team" : "sales",
     "colour" : "#42f4d1"
   },
   "Thibaut": {
     "name" : "Thibaut",
+    "team" : "sales",
     "colour" : "#42f4d1"
   },
   "Janwyn": {
     "name" : "Janwyn",
+    "team" : "sales",
     "colour" : "#002a61"
   }
 };

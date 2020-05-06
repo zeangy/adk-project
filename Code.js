@@ -437,6 +437,12 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   var section = CardService.newCardSection()
     .setHeader("<font color=\""+fontColour+"\">Deal Lead: "+response.owner.name+"</font>"+(referralCategory ? "<br><font color=\"#70767f\">Category: "+referralCategory+"</font>" : ""));  
   
+  if(status.indexOf("TEST") >= 0){
+    section.addWidget(CardService.newTextButton()
+    .setText("View / Add Notes")
+    .setOnClickAction(CardService.newAction().setFunctionName("buildAddNotesCard").setParameters({'applicationId':applicationId, 'name':name})));
+  }
+  
   var statusList = LendeskAPILibrary.STATUS_NAME_LIST;//["1. Lead", "2. Sent Commitment", "3. Received Commitment", "4. Instructed", "5. Funded", "Complete", "Declined", "Cancelled"];
   
   if(statusList.indexOf(status) >= 0){
@@ -636,8 +642,8 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     .setOnClickAction(CardService.newAction().setFunctionName("buildQuickLinksCard").setParameters({'applicationId':applicationId, 'status': status, 'folderName': getFolderName(response.applicants)})));
 
   moreOptionsSection.addWidget(CardService.newTextButton()
-    .setText("Add Notes")
-    .setOnClickAction(CardService.newAction().setFunctionName("buildAddNotesCard").setParameters({'applicationId':applicationId, 'name':name})));
+    .setText("View / Add Notes")
+    .setOnClickAction(CardService.newAction().setFunctionName("buildUpdateNotesCard").setParameters({'applicationId':applicationId, 'name':name})));
 
   var testOptionsSection = CardService.newCardSection()
     .setCollapsible(true)

@@ -303,8 +303,76 @@ function buildUpdateLendeskCard(e){
 
 }
 
-
 function buildAddNotesCard(e){
+  
+  var applicationId = e.commonEventObject.parameters.applicationId;
+  var title = e.commonEventObject.parameters.name;
+  
+  var notes = LendeskAPILibrary.getLendeskNotes(applicationId);
+  
+  var card = CardService.newCardBuilder()
+    .setHeader(CardService.newCardHeader()
+    .setTitle(title));
+  
+  var currentUserTeam = LENDESK_USERS[getUserName()].team;
+  
+  var noteTypes = {
+    "underwriting" : "UNDERWRITING NOTES",
+    "sales" : "BDM NOTES"
+  };
+  
+  var noteType = ( noteTypes[currentUserTeam] || noteTypes["underwriting"]); // default to underwriting
+  
+  var addNoteSection = CardService.newCardSection();
+  
+  addNoteSection.addWidget(CardService.newTextInput()
+    .setMultiline(true)
+    .setTitle("ADD "+noteType)
+    .setFieldName("note")
+  );
+    
+  var parameters = {
+    "applicationId" : applicationId,
+    "noteType" : noteType
+  };
+  
+  addNoteSection.addWidget(CardService.newTextButton()
+    .setText("Submit")
+    .setOnClickAction(CardService.newAction()
+    .setFunctionName("addLendeskNote")
+    .setParameters(parameters)));
+  
+  card.addSection(addNoteSection);
+  
+  for(var i in noteTypes){
+    var displayNoteSection = CardService.newCardSection().setHeader("NOTES").setCollapsible(true).setNumUncollapsibleWidgets(1);
+    for(var j in notes){
+      if(notes[j].comment.indexOf(noteTypes[i]) >= 0){
+        displayNoteSection.addWidget(CardService.newKeyValue()
+          .setTopLabel(i.toUpperCase())
+          .setContent(notes[j].comment.replace(noteTypes[i], ""))
+          .setBottomLabel("Created At: "+notes[j].created_at)
+        );
+      }
+    }
+    card.addSection(displayNoteSection);
+  }
+  
+  
+  var actionResponse = CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation()
+       .pushCard(card.build()))
+    .build();
+    
+  return actionResponse;
+}
+
+function addLendeskNote(e){
+
+
+}
+
+function buildUpdateNotesCard(e){
   var applicationId = e.parameters.applicationId;
   var notes = LendeskAPILibrary.getLendeskNotes(applicationId);
   
@@ -345,6 +413,7 @@ function buildAddNotesCard(e){
       "noteList" : brokerNotes,
       "currentNote" : ""
     },
+
     "borrower" : {
       "keyWord" : "BORROWER SOLICITOR CONTACT INFORMATION",
       "title" : "BORROWER SOLICITOR",
