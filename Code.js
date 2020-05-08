@@ -461,6 +461,14 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     );
   }
   
+  // Show cancelled/declined reason
+  if(response.account_status && status.indexOf("Declined") >= 0 || status.indexOf("Cancelled") >= 0 || status.indexOf("On Hold") >= 0){
+    section.addWidget(CardService.newKeyValue()
+      .setTopLabel(status+" Reason: "+(response.account_status.end_state_reason ? response.account_status.end_state_reason.title || "" : ""))
+      .setContent("<font color='#ab0000'>"+(response.account_status.description || "--")+"</font>")
+    );
+  }
+  
   if(response.applicants.length > 1){
     for(var i = 1; i<response.applicants.length; i++){
      name += ", "+response.applicants[i].name; 
