@@ -46,37 +46,44 @@ var LENDESK_USERS = {
   "Alexandra" : {
     "name" : "Alexandra",
     "team" : "underwriting",
-    "colour" : "#ef6902"
+    "colour" : "#ef6902", 
+    "id" : "57032793-92fd-431c-a73a-46e46198e0f3"
   }, 
   "Aida" : {
     "name" : "Aida",
     "team" : "underwriting",
-    "colour" : "#ea0baf"
+    "colour" : "#ea0baf",
+    "id" : "4b2ec875-4a82-458d-ab96-29e2e15b242f"
   }, 
   "Sasha" : {
     "name" : "Sasha",
     "team" : "underwriting",
-    "colour" : "#f4b342"
+    "colour" : "#f4b342",
+    "id" : "28238900-5f46-4677-a9b0-a745b53697fd"
   }, 
   "Jared" : {
     "name" : "Jared",
     "team" : "underwriting",
-    "colour" : "#13a02a"
+    "colour" : "#13a02a",
+    "id" : "fb052c26-f4f4-4288-9f5f-d124e220fe60"
   }, 
   "Valerie": {
     "name" : "Valerie",
     "team" : "sales",
-    "colour" : "#42f4d1"
+    "colour" : "#42f4d1", 
+    "id" : "d8213105-1d65-4b36-857c-b13a007e78ab"
   },
   "Thibaut": {
     "name" : "Thibaut",
     "team" : "sales",
-    "colour" : "#42f4d1"
+    "colour" : "#42f4d1", 
+    "id" : "fe2aee08-1aa8-4e95-a076-3ece8dd24d41"
   },
   "Janwyn": {
     "name" : "Janwyn",
     "team" : "sales",
-    "colour" : "#002a61"
+    "colour" : "#002a61", 
+    "id" : "53b1d499-abf8-4567-9f20-5ce128624910"
   }
 };
 

@@ -340,7 +340,8 @@ function buildAddNotesCard(e){
     
   var parameters = {
     "applicationId" : applicationId,
-    "keyWord" : keyWord
+    "keyWord" : keyWord, 
+    "createdById" : userDetails.id
   };
   
   addNoteSection.addWidget(CardService.newTextButton()
@@ -353,17 +354,24 @@ function buildAddNotesCard(e){
   
   var displayNoteSection = CardService.newCardSection().setCollapsible(true).setNumUncollapsibleWidgets(5);
   var notesAdded = 0;
-  for(var j in notes){
-    for(var i in noteTypes){
-        if(notes[j].comment.indexOf(noteTypes[i]) >= 0){
-          var content = notes[j].comment.replace(noteTypes[i]+"<br>", "");
-          if(noteTypes[i] == keyWord){
+  for(var i in notes){
+    for(var j in noteTypes){
+        var currentNote = notes[i];
+        var currentNoteType = noteTypes[j];
+        if(currentNote.comment.indexOf(currentNoteType) >= 0){
+          var content = currentNote.comment.replace(currentNoteType+"<br>", "");
+          if(currentNoteType == keyWord){
             content = "<b><font color=\""+fontColour+"\"> "+content+"</font></b>";
           }
+
+          var createdById = currentNote.created_by_id;
+          var author = Object.keys(LENDESK_USERS).filter(function(key){ return LENDESK_USERS[key].id == createdById; });
+          author = (author.length > 0 ? LENDESK_USERS[author[0]].name : "Portal") ;
+          
           var noteWidget = CardService.newKeyValue()
-            .setTopLabel(i.toUpperCase())
+            .setTopLabel(j.toUpperCase()+" - "+author)
             .setContent(content)
-            .setBottomLabel("Created At: "+Utilities.formatDate(new Date(notes[j].created_at), "PST", "yyyy-MM-dd h:mm a"));
+            .setBottomLabel("Created At: "+Utilities.formatDate(new Date(currentNote.created_at), "PST", "yyyy-MM-dd h:mm a"));
           displayNoteSection.addWidget(noteWidget);
           notesAdded ++;
         }
@@ -395,12 +403,13 @@ function buildAddNotesCard(e){
 function addLendeskNote(e){
   var applicationId = e.commonEventObject.parameters.applicationId;
   var keyWord = e.commonEventObject.parameters.keyWord;
+  var createdById = e.commonEventObject.parameters.createdById;
   var formInputs = e.commonEventObject.formInputs;
   var note = (formInputs  ? formInputs.note.stringInputs.value : "");
   var message = "Created Note!";
   
   if(note){
-    LendeskAPILibrary.createLendeskNote(applicationId, keyWord+"<br>"+note.toString().replace(/\n/g, "<br>"));
+    LendeskAPILibrary.createLendeskNote(applicationId, keyWord+"<br>"+note.toString().replace(/\n/g, "<br>"), createdById);
   }
   else{
     message = "Error: Note not created";
