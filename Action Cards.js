@@ -369,6 +369,7 @@ function buildAddNotesCard(e){
           author = (author.length > 0 ? LENDESK_USERS[author[0]].name : "Portal") ;
           
           var noteWidget = CardService.newKeyValue()
+            .setMultiline(true)
             .setTopLabel(j.toUpperCase()+" - "+author)
             .setContent(content)
             .setBottomLabel("Created At: "+Utilities.formatDate(new Date(currentNote.created_at), "PST", "yyyy-MM-dd h:mm a"));
