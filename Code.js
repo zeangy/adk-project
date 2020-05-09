@@ -466,6 +466,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     section.addWidget(CardService.newKeyValue()
       .setTopLabel(status+" Reason: "+(response.account_status.end_state_reason ? response.account_status.end_state_reason.title || "" : ""))
       .setContent("<font color='#ab0000'>"+(response.account_status.description || "--")+"</font>")
+      .setMultiline(true)
     );
   }
   
