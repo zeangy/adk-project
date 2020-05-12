@@ -806,9 +806,9 @@ function updateLendeskNotes(e){
   
   var compare = [
     {
-      "updated" : e.formInputs.underwriting_notes_field,
-      "old" : e.parameters.underwritingNote,
-      "keyWord" : e.parameters.underwritingNoteKey
+      "updated" : e.formInputs.broker_notes_field,
+      "old" : e.parameters.brokerNote,
+      "keyWord" : e.parameters.brokerNoteKey
     },
     {
       "updated" : e.formInputs.borrower_solicitor_contact_field,
