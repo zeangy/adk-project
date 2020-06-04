@@ -42,7 +42,7 @@ function getApprovalApplications() {
     return y - x;
   });
   
-  return filteredApplicationCard(approvalList, "Send for Approval")[0]; // April 28 2020 fix to error, revisit later
+  return filteredApplicationCard(approvalList, "Send for Approval"); 
 }
 
 /** 
@@ -56,6 +56,7 @@ function getApprovalApplications() {
  */
 function getExpiredCommitmentApplications(e){
   var statusList = [
+     LENDESK_STATUS_ARRAY["1. Quote"],
      LENDESK_STATUS_ARRAY["2. Sent Commitment"]
   ];
   var formDealLead = e.formInput.dealLead;
@@ -76,15 +77,15 @@ function getExpiredCommitmentApplications(e){
       }
       
       var today = new Date();
-      var tomorrow = new Date();
-      tomorrow.setDate(today.getDate()+1);
+      var twoDays = new Date();
+      twoDays.setDate(today.getDate()+2);
       
       var commitmentExpiryDate = new Date();
       commitmentExpiryDate.setFullYear(commitmentExpiry.split("-")[0]);
       commitmentExpiryDate.setMonth(commitmentExpiry.split("-")[1]-1);
       commitmentExpiryDate.setDate(commitmentExpiry.split("-")[2]);
       
-      var note = "";
+      var note = "Expiring Soon";
       var template = null;
       
       Logger.log(response[i]);
@@ -97,8 +98,8 @@ function getExpiredCommitmentApplications(e){
         note = "Expiring Today";
         template = EXPIRY_TEMPLATES["Expires Today"];
       }
-      else if(equalDates(commitmentExpiryDate, tomorrow)){
-        note = "Expiring Tomorrow";
+      else if(commitmentExpiryDate <= twoDays){
+        note = (equalDates(commitmentExpiryDate, twoDays) ? "Expires in 2 days" : "Expiring Tomorrow");
         template = EXPIRY_TEMPLATES["Expires Tomorrow"];
       }
       Logger.log(response[i].referral_source_code[0]);
@@ -117,12 +118,14 @@ function getExpiredCommitmentApplications(e){
     .setTitle("Filter By Deal Lead")
     .setOnChangeAction(CardService.newAction().setFunctionName("reload").setLoadIndicator(CardService.LoadIndicator.SPINNER));
   
+  selectionInput.addItem("All", "*", (dealLead == "*"));
   for(var i in LENDESK_USERS){
     selectionInput.addItem(LENDESK_USERS[i].name, LENDESK_USERS[i].name, (dealLead == LENDESK_USERS[i].name));
   }  
+  
   section.addWidget(selectionInput);
     
-  return filteredApplicationCard(expiredList, "Expiring Commitments", section);
+  return filteredApplicationCard(expiredList, "Expiring Offers", section);
 }
 
 function prepEmails(){
@@ -130,7 +133,7 @@ function prepEmails(){
 }
 
 function reload(e){
-  return getExpiredCommitmentApplications(e)[0];
+  return getExpiredCommitmentApplications(e);
 }
 
 /** 
@@ -193,5 +196,5 @@ function filteredApplicationCard(response, title, extraSection){
   }
   card.addSection(section);
   
-  return [card.build()];
+  return card.build(); // April 28 2020 fix to error, revisit later
 }

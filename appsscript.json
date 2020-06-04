@@ -41,7 +41,7 @@
         "label": "Send for Approval",
         "runFunction": "getApprovalApplications"
       }, {
-        "label": "Expiring Commitments",
+        "label": "Expiring Offers",
         "runFunction": "getExpiredCommitmentApplications"
       }],
       "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/"]
