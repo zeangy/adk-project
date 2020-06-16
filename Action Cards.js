@@ -407,10 +407,18 @@ function addLendeskNote(e){
   var createdById = e.commonEventObject.parameters.createdById;
   var formInputs = e.commonEventObject.formInputs;
   var note = (formInputs  ? formInputs.note.stringInputs.value : "");
+  var parsedNote = note.toString().replace(/\n/g, "<br>");
   var message = "Created Note!";
   
   if(note){
-    LendeskAPILibrary.createLendeskNote(applicationId, keyWord+"<br>"+note.toString().replace(/\n/g, "<br>"), createdById);
+    LendeskAPILibrary.createLendeskNote(applicationId, keyWord+"<br>"+parsedNote, createdById);
+    try{
+      PipedriveAPILibrary.addNoteToDeal(applicationId, parsedNote, createdById);
+    }
+    catch(e){
+      Logger.log(e);
+      message = message+" - Error creating in Pipedrive";
+    }
   }
   else{
     message = "Error: Note not created";
