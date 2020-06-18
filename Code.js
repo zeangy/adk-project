@@ -416,7 +416,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   var header = CardService.newCardHeader()
       .setTitle(name);
       
-  ( response.referral_source ? header.setSubtitle("Broker: "+response.referral_source.subtitle) : "");
+  header.setSubtitle(( collateral_list[0] && collateral_list[0].description ? collateral_list[0].description : "Missing Address"));
 
   if(customTitle){
     header.setSubtitle(customTitle+" | Broker: "+(response.referral_source && response.referral_source.subtitle ? response.referral_source.subtitle : "NOT SET"));
@@ -437,9 +437,28 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   var section = CardService.newCardSection()
     .setHeader("<font color=\""+fontColour+"\">Deal Lead: "+response.owner.name+"</font>"+(referralCategory ? "<br><font color=\"#70767f\">Category: "+referralCategory+"</font>" : ""));  
   
+
   section.addWidget(CardService.newTextButton()
     .setText("BDM and Underwriting Notes")
     .setOnClickAction(CardService.newAction().setFunctionName("buildAddNotesCard").setParameters({'applicationId':applicationId, 'name':name})));
+  
+  var brokerName = "NOT SET";
+  var pipedriveBrokerDetail = {};
+  
+  if(response.referral_source && response.referral_source.subtitle){
+    brokerName = response.referral_source.subtitle;
+    if(response.referral_source.referable_id){
+      pipedriveBrokerDetail = PipedriveAPILibrary.getPersonDeals(response.referral_source.referable_id);
+    }
+  }
+  var closeRatio = (pipedriveBrokerDetail["close_ratio"] >= 0 ? (parseFloat(pipedriveBrokerDetail["close_ratio"])*100).toFixed(2)+"%" : "Unknown");
+  var fundedVolume = (pipedriveBrokerDetail["funded_volume"] != undefined ? "$"+(parseFloat(pipedriveBrokerDetail["funded_volume"])/1000000).toFixed(2)+"M" : "Unknown");
+
+  section.addWidget(CardService.newKeyValue()
+    .setTopLabel("Broker")
+    .setContent(brokerName)
+    .setBottomLabel("Close Ratio: "+closeRatio+", Volume Funded: "+fundedVolume)
+  );
   
   var statusList = LendeskAPILibrary.STATUS_NAME_LIST;//["1. Lead", "2. Sent Commitment", "3. Received Commitment", "4. Instructed", "5. Funded", "Complete", "Declined", "Cancelled"];
   
@@ -476,7 +495,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     }
   }
   section.addWidget(CardService.newKeyValue()
-    .setTopLabel("Name")
+    .setTopLabel("Applicant Names")
     .setContent((name ? "<font color=\"#1257e0\">"+name+"</font>" : ""))
     .setOpenLink(openInLendeskLink)); 
   
@@ -651,7 +670,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   moreOptionsSection.addWidget(CardService.newTextButton()
     .setText("Broker and Solicitor Notes")
     .setOnClickAction(CardService.newAction().setFunctionName("buildUpdateNotesCard").setParameters({'applicationId':applicationId, 'name':name})));
-
+  
   var testOptionsSection = CardService.newCardSection()
     .setCollapsible(true)
     .setHeader("Options in Test Phase");
@@ -674,7 +693,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   card.addSection(emailSection);
   //card.addSection(folderSection);
   card.addSection(moreOptionsSection);
-  card.addSection(testOptionsSection);
+  //card.addSection(testOptionsSection);
   //card.addSection(pipelineStatusSection(applicationId));
   
   

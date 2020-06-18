@@ -82,7 +82,7 @@ var LENDESK_USERS = {
   },
   "Janwyn": {
     "name" : "Janwyn",
-    "team" : "sales",
+    "team" : "underwriting",
     "colour" : "#002a61", 
     "id" : "53b1d499-abf8-4567-9f20-5ce128624910"
   }
