@@ -448,16 +448,14 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   if(response.referral_source && response.referral_source.subtitle){
     brokerName = response.referral_source.subtitle;
     if(response.referral_source.referable_id){
-      pipedriveBrokerDetail = PipedriveAPILibrary.getPersonDeals(response.referral_source.referable_id);
+      pipedriveBrokerDetail = PipedriveAPILibrary.getPersonDeals(response.referral_source.referable_id, true);
     }
   }
-  var closeRatio = (pipedriveBrokerDetail["close_ratio"] >= 0 ? (parseFloat(pipedriveBrokerDetail["close_ratio"])*100).toFixed(2)+"%" : "Unknown");
-  var fundedVolume = (pipedriveBrokerDetail["funded_volume"] != undefined ? "$"+(parseFloat(pipedriveBrokerDetail["funded_volume"])/1000000).toFixed(2)+"M" : "Unknown");
-
+  
   section.addWidget(CardService.newKeyValue()
     .setTopLabel("Broker")
     .setContent(brokerName)
-    .setBottomLabel("Close Ratio: "+closeRatio+", Volume Funded: "+fundedVolume)
+    .setBottomLabel(formatPipedriveClosingStats(pipedriveBrokerDetail))
   );
   
   var statusList = LendeskAPILibrary.STATUS_NAME_LIST;//["1. Lead", "2. Sent Commitment", "3. Received Commitment", "4. Instructed", "5. Funded", "Complete", "Declined", "Cancelled"];
