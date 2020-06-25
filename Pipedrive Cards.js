@@ -120,6 +120,12 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
   var contactDetails = PipedriveAPILibrary.getPersonDetails(personId, false);
   var dealInfo = PipedriveAPILibrary.getPersonDeals(personId, false);
   
+  var card = CardService.newCardBuilder()
+    .setHeader(CardService.newCardHeader()
+      .setTitle(contactDetails.name)
+      .setSubtitle((contactDetails.type || ""))
+      .setImageUrl(IMAGES.PIPEDRIVE));
+
   contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
     .setTopLabel("Name")
     .setContent(formatLink(contactDetails.name)).setOpenLink(CardService.newOpenLink()
@@ -156,12 +162,7 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
           );
       }
     }
-    
   }
-  var card = CardService.newCardBuilder()
-    .setHeader(CardService.newCardHeader()
-      .setTitle(contactDetails.name)
-      .setImageUrl(IMAGES.PIPEDRIVE));
       
   card.addSection(contactDetailSection);
   card.addSection(dealSection);
