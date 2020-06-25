@@ -116,29 +116,42 @@ function searchPipedrivePersonListSection(response, errorMsg){
 function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
   var personId = e.commonEventObject.parameters["personId"];
       
-  var contactDetailSection = CardService.newCardSection().setHeader("Contact Details");
+  var contactDetailSection = CardService.newCardSection();
   var contactDetails = PipedriveAPILibrary.getPersonDetails(personId, false);
   var dealInfo = PipedriveAPILibrary.getPersonDeals(personId, false);
   
   var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader()
       .setTitle(contactDetails.name)
-      .setSubtitle((contactDetails.type || ""))
+      .setSubtitle((contactDetails.org_id && contactDetails.org_id.name ? contactDetails.org_id.name : "No Linked Organization"))
       .setImageUrl(IMAGES.PIPEDRIVE));
 
-  contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
-    .setTopLabel("Name")
+  
+  var nameKeyValue = CardService.newKeyValue().setMultiline(true)
+    .setTopLabel("Contact Type: "+(contactDetails.type || "Not Set"))
     .setContent(formatLink(contactDetails.name)).setOpenLink(CardService.newOpenLink()
-      .setUrl("https://neighbourhoodholdings-originations.pipedrive.com/person/"+personId))
-    .setBottomLabel(formatPipedriveClosingStats(dealInfo))
-  );
+      .setUrl("https://neighbourhoodholdings-originations.pipedrive.com/person/"+personId)
+    );
+  if(!contactDetails.type || contactDetails.type == "Broker"){
+    nameKeyValue.setBottomLabel(formatPipedriveClosingStats(dealInfo));
+  }
+  contactDetailSection.addWidget(nameKeyValue);
   contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
     .setTopLabel("Email Addresses")
-    .setContent(contactDetails.email.map(function(x){return x["value"]+"<br>";}).join(""))
+    .setContent(contactDetails.email.map(function(x){return "<a href='mailto:"+x["value"]+"'>"+x["value"]+"</a>";}).join("<br>"))
   );
   contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
     .setTopLabel("Phone Numbers")
-    .setContent(contactDetails.phone.map(function(x){return x["value"]+"<br>";}).join(""))
+    .setContent(contactDetails.phone.map(function(x){return x["value"];}).join("<br>"))
+  );
+  var otherInfo = "Years' of Experience: <b>"+(contactDetails.yearsExperience || "")+"</b><br>"+
+      "Primary Business: <b>"+(contactDetails.primaryBusiness || "")+"</b><br>"+
+      "Tag: <b>"+(contactDetails.tag || "")+"</b><br>"+
+      "Province: <b>"+(contactDetails.province || "")+"</b>";
+      
+  contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
+    .setTopLabel("Other Info")
+    .setContent(otherInfo)
   );
   
   var dealSection = CardService.newCardSection().setHeader("Deals");
