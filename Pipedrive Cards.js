@@ -1,16 +1,4 @@
 /*
- * Format closing ratio and volume detail
- * 
- * @param {JSON Object} pipedriveBrokerDetail The broker detail from the deal detail call
- * @return {String} The formatted string
- */
-function formatPipedriveClosingStats(pipedriveBrokerDetail){
-  var closeRatio = (pipedriveBrokerDetail["close_ratio"] >= 0 ? (parseFloat(pipedriveBrokerDetail["close_ratio"])*100).toFixed(2)+"%" : "Unknown");
-  var fundedVolume = (pipedriveBrokerDetail["funded_volume"] != undefined ? "$"+(parseFloat(pipedriveBrokerDetail["funded_volume"])/1000000).toFixed(2)+"M" : "Unknown");
-  return "Close Ratio: "+closeRatio+", Volume Funded: "+fundedVolume;
-}
-
-/*
  * Creates a card to search for broker contacts in Pipedrive
  *
  * @return {Card} New card with the search field.
@@ -19,7 +7,7 @@ function buildPipedrivePersonSearchCard(){
   var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader()
       .setTitle("Search Pipedrive Contacts")
-      .setImageUrl(IMAGES.SEARCH))
+      .setImageUrl(IMAGES.PIPEDRIVE))
     .addSection(pipedrivePersonSearchSection());
    
    return card.build();
@@ -130,16 +118,30 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
       
   var contactDetailSection = CardService.newCardSection().setHeader("Contact Details");
   var contactDetails = PipedriveAPILibrary.getPersonDetails(personId, false);
-  contactDetailSection.addWidget(CardService.newKeyValue().setContent(contactDetails.name));
+  var dealInfo = PipedriveAPILibrary.getPersonDeals(personId, false);
+  
+  contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
+    .setTopLabel("Name")
+    .setContent(formatLink(contactDetails.name)).setOpenLink(CardService.newOpenLink()
+      .setUrl("https://neighbourhoodholdings-originations.pipedrive.com/person/"+personId))
+    .setBottomLabel(formatPipedriveClosingStats(dealInfo))
+  );
+  contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
+    .setTopLabel("Email Addresses")
+    .setContent(contactDetails.email.map(function(x){return x["value"]+"<br>";}).join(""))
+  );
+  contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
+    .setTopLabel("Phone Numbers")
+    .setContent(contactDetails.phone.map(function(x){return x["value"]+"<br>";}).join(""))
+  );
   
   var dealSection = CardService.newCardSection().setHeader("Deals");
-  var deals = PipedriveAPILibrary.getPersonDeals(personId, false);
-  var dealDetails = deals.dealDetails;
+  var dealDetails = dealInfo.dealDetails;
   if(!dealDetails || dealDetails.length < 1) {
     dealSection.addWidget(CardService.newTextParagraph().setText("<i>No Deals Found</i>"));
   }
   else{
-    dealSection.setHeader("Deals: "+deals["open"]+" Open / "+deals["won"]+" Won / "+deals["lost"]+" Lost");
+    dealSection.setHeader("Deals: "+dealInfo["open"]+" Open / "+dealInfo["won"]+" Won / "+dealInfo["lost"]+" Lost");
     dealSection.setNumUncollapsibleWidgets(2).setCollapsible(true);
     for(var i in dealDetails){
       if(i < 50){
@@ -158,7 +160,8 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
   }
   var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader()
-      .setTitle(contactDetails.name).setSubtitle(formatPipedriveClosingStats(deals)));
+      .setTitle(contactDetails.name)
+      .setImageUrl(IMAGES.PIPEDRIVE));
       
   card.addSection(contactDetailSection);
   card.addSection(dealSection);

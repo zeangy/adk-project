@@ -452,11 +452,18 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     }
   }
   
-  section.addWidget(CardService.newKeyValue()
+  var brokerKeyValue = CardService.newKeyValue()
     .setTopLabel("Broker")
     .setContent(brokerName)
-    .setBottomLabel(formatPipedriveClosingStats(pipedriveBrokerDetail))
+    .setBottomLabel(formatPipedriveClosingStats(pipedriveBrokerDetail)
   );
+  
+  if(pipedriveBrokerDetail.id){
+    brokerKeyValue.setIconUrl(IMAGES.PIPEDRIVE);
+    brokerKeyValue.setOnClickAction(CardService.newAction().setFunctionName("buildPipedrivePersonDetailsCard").setParameters({'personId':pipedriveBrokerDetail.id}));
+  }
+  
+  section.addWidget(brokerKeyValue);
   
   var statusList = LendeskAPILibrary.STATUS_NAME_LIST;//["1. Lead", "2. Sent Commitment", "3. Received Commitment", "4. Instructed", "5. Funded", "Complete", "Declined", "Cancelled"];
   
@@ -494,7 +501,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   }
   section.addWidget(CardService.newKeyValue()
     .setTopLabel("Applicant Names")
-    .setContent((name ? "<font color=\"#1257e0\">"+name+"</font>" : ""))
+    .setContent((name ? formatLink(name) : ""))
     .setOpenLink(openInLendeskLink)); 
   
   if(status.indexOf("Sent Commitment") >= 0 || status.indexOf("Quote") >= 0 || status.indexOf("TEST") >= 0){

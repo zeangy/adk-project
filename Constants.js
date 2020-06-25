@@ -88,14 +88,15 @@ var LENDESK_USERS = {
   }
 };
 
-IMAGES = {
+var IMAGES = {
   "SMILE" : "https://cdn0.iconfinder.com/data/icons/emoji-party-pack/250/Emoji-Party-Pack-38-256.png", 
   "FROWN" : "https://cdn0.iconfinder.com/data/icons/emoji-party-pack/250/Emoji-Party-Pack-07-256.png", 
   "INDIVIDUAL" : "https://www.gstatic.com/images/icons/material/system/1x/people_grey600_48dp.png",
   "MULTIPLE" : "https://www.gstatic.com/images/icons/material/system/1x/person_grey600_48dp.png", 
   "UPDATE" : "http://files.conconi.ca/loud_howard.jpg", 
   "SEARCH" : "http://joshwcomeau.github.io/RequestKittensDocs/public/assets/images/kitten_icon.png", 
-  "GOOGLE_SHEET" : "https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_spreadsheet_x16.png"
+  "GOOGLE_SHEET" : "https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_spreadsheet_x16.png", 
+  "PIPEDRIVE" : "https://cdn.us-east-1.pipedriveassets.com/chrome-extension-assets/icons/favicon.ico"
 };
 
 // Lendesk logo

@@ -48,3 +48,26 @@ function standardizeDate(date){
 function msSinceEpochToDate(ms){
   return standardizeDate(new Date(parseInt(ms)));
 }
+
+/*
+ * Format closing ratio and volume detail
+ * 
+ * @param {JSON Object} pipedriveBrokerDetail The broker detail from the deal detail call
+ * @return {String} The formatted string
+ */
+function formatPipedriveClosingStats(pipedriveBrokerDetail){
+  var closeRatio = (pipedriveBrokerDetail["close_ratio"] >= 0 ? (parseFloat(pipedriveBrokerDetail["close_ratio"])*100).toFixed(2)+"%" : "Unknown");
+  var fundedVolume = (pipedriveBrokerDetail["funded_volume"] != undefined ? "$"+(parseFloat(pipedriveBrokerDetail["funded_volume"])/1000000).toFixed(2)+"M" : "Unknown");
+  return "Close Ratio: "+closeRatio+", Funded: "+fundedVolume;
+}
+
+/*
+ * Format key value that opens external url on click
+ *
+ * @param {String} text The text to format
+ * @return {String} The text with HTML formatting to set font colour
+ */
+function formatLink(text){
+  var linkColour = "#1257e0";
+  return "<font color=\""+linkColour+"\">"+text+"</font>";
+}

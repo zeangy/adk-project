@@ -52,7 +52,7 @@
         "label": "Broker Search",
         "runFunction": "buildPipedrivePersonSearchCard"
       }],
-      "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/"]
+      "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/", "https://neighbourhoodholdings-originations.pipedrive.com/"]
     },
     "gmail": {
       "contextualTriggers": [{
