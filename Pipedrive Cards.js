@@ -117,6 +117,7 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
   var personId = e.commonEventObject.parameters["personId"];
       
   var contactDetailSection = CardService.newCardSection();
+  
   var contactDetails = PipedriveAPILibrary.getPersonDetails(personId, false);
   var dealInfo = PipedriveAPILibrary.getPersonDeals(personId, false);
   
@@ -125,7 +126,6 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
       .setTitle(contactDetails.name)
       .setSubtitle((contactDetails.org_id && contactDetails.org_id.name ? contactDetails.org_id.name : "No Linked Organization"))
       .setImageUrl(IMAGES.PIPEDRIVE));
-
   
   var nameKeyValue = CardService.newKeyValue().setMultiline(true)
     .setTopLabel("Contact Type: "+(contactDetails.type || "Not Set"))
@@ -154,13 +154,39 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
     .setContent(otherInfo)
   );
   
-  var dealSection = CardService.newCardSection().setHeader("Deals");
+  var notesSection = CardService.newCardSection().setHeader("Notes: "+contactDetails["notes_count"]);
+  var addNoteButton = CardService.newTextButton().setText("Add Note").setOnClickAction(CardService.newAction().setFunctionName('addPipedriveNote'));
+  notesSection.addWidget(addNoteButton);
+
+  if(contactDetails["notes_count"] > 0){
+    
+  }
+  
+  var activitySection = CardService.newCardSection().setHeader("Activities: "+contactDetails["done_activities_count"]+" Done / "+contactDetails["undone_activities_count"]+" Pending");
+  var addActivityButton = CardService.newTextButton().setText("Add Activity").setOnClickAction(CardService.newAction().setFunctionName('addPipedriveActivity'));
+  activitySection.addWidget(addActivityButton);
+  if(contactDetails["activities_count"] > 0){
+    activitySection.setNumUncollapsibleWidgets(2).setCollapsible(true);
+    var activities = PipedriveAPILibrary.getPersonActivities(personId);
+    activities = activities.filter(function(x){return x["type"] != "email";});
+    for(var i in activities){
+      if(i < 50){
+        var currentActivity = activities[i];
+        activitySection.addWidget(CardService.newKeyValue()
+          .setTopLabel(currentActivity.type)
+          .setContent((currentActivity.note_clean || ""))
+          .setBottomLabel(currentActivity.add_time)
+        );
+      }
+    }
+  }
+  
+  var dealSection = CardService.newCardSection().setHeader("Lendesk Deals: "+(dealInfo["open"] || "0")+" Open / "+(dealInfo["won"] || "0")+" Won / "+(dealInfo["lost"] || "0")+" Lost");
   var dealDetails = dealInfo.dealDetails;
   if(!dealDetails || dealDetails.length < 1) {
     dealSection.addWidget(CardService.newTextParagraph().setText("<i>No Deals Found</i>"));
   }
   else{
-    dealSection.setHeader("Deals: "+dealInfo["open"]+" Open / "+dealInfo["won"]+" Won / "+dealInfo["lost"]+" Lost");
     dealSection.setNumUncollapsibleWidgets(2).setCollapsible(true);
     for(var i in dealDetails){
       if(i < 50){
@@ -176,9 +202,12 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
       }
     }
   }
-      
+  
   card.addSection(contactDetailSection);
+  card.addSection(notesSection);
+  card.addSection(activitySection);
   card.addSection(dealSection);
+  
     
   if(actionResponseBoolean){
     var actionResponse = CardService.newActionResponseBuilder()
@@ -190,4 +219,13 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
   else{
     return card.build();
   }
+}
+
+
+function addPipedriveNote(e){
+
+}
+
+function addPipedriveActivity(e){
+  
 }
