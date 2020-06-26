@@ -448,7 +448,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   if(response.referral_source && response.referral_source.subtitle){
     brokerName = response.referral_source.subtitle;
     if(response.referral_source.referable_id){
-      pipedriveBrokerDetail = PipedriveAPILibrary.getPersonDeals(response.referral_source.referable_id, true);
+      pipedriveBrokerDetail = PipedriveAPILibrary.getLendeskPersonDeals(response.referral_source.referable_id);
     }
   }
   

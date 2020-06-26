@@ -413,7 +413,7 @@ function addLendeskNote(e){
   if(note){
     LendeskAPILibrary.createLendeskNote(applicationId, keyWord+"<br>"+parsedNote, createdById);
     try{
-      PipedriveAPILibrary.addNoteToDeal(applicationId, parsedNote, createdById);
+      PipedriveAPILibrary.addLendeskNoteToDeal(applicationId, parsedNote, createdById);
     }
     catch(e){
       Logger.log(e);

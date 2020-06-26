@@ -118,8 +118,8 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
       
   var contactDetailSection = CardService.newCardSection();
   
-  var contactDetails = PipedriveAPILibrary.getPersonDetails(personId, false);
-  var dealInfo = PipedriveAPILibrary.getPersonDeals(personId, false);
+  var contactDetails = PipedriveAPILibrary.getPersonDetails(personId);
+  var dealInfo = PipedriveAPILibrary.getPersonDeals(personId);
   
   var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader()
@@ -159,7 +159,15 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
   notesSection.addWidget(addNoteButton);
 
   if(contactDetails["notes_count"] > 0){
-    
+    var notes = PipedriveAPILibrary.getPersonNotes(personId);
+    for(var i in notes){
+      var currentNote = notes[i];
+      notesSection.addWidget(CardService.newKeyValue()
+          .setTopLabel(currentNote.user.name)
+          .setContent((currentNote.content || ""))
+          .setBottomLabel(currentNote.add_time)
+      );
+    }
   }
   
   var activitySection = CardService.newCardSection().setHeader("Activities: "+contactDetails["done_activities_count"]+" Done / "+contactDetails["undone_activities_count"]+" Pending");
@@ -168,7 +176,7 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
   if(contactDetails["activities_count"] > 0){
     activitySection.setNumUncollapsibleWidgets(2).setCollapsible(true);
     var activities = PipedriveAPILibrary.getPersonActivities(personId);
-    activities = activities.filter(function(x){return x["type"] != "email";});
+    activities = (activities ? activities.filter(function(x){return x["type"] != "email";}) : activities);
     for(var i in activities){
       if(i < 50){
         var currentActivity = activities[i];
