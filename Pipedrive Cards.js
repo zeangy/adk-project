@@ -100,11 +100,77 @@ function searchPipedrivePersonListSection(response, errorMsg){
         .setBottomLabel(contactEmailList.join(", "))
         .setOnClickAction(CardService.newAction()
           .setFunctionName('buildPipedrivePersonDetailsCard')
-          .setParameters({'personId':contactId, 'organizationId':organizationId}));
+          .setParameters({'pipedriveId':contactId, 'organizationId':organizationId}));
       section.addWidget(keyValue);
     }  
   }
   return section;
+}
+
+/*
+ * Get notes from pipedrive and add keyvalues to section
+ *
+ * @param {String} personId The id of the contact in Pipedrive
+ * @return {[Widgets]} Keyvalue widgets for each note
+ */
+function getNoteWidgets(personId){
+  var widgetList = [];
+  var notes = PipedriveAPILibrary.getPersonNotes(personId);
+  for(var i in notes){
+    var currentNote = notes[i];
+    var currentWidget = CardService.newKeyValue()
+        .setTopLabel(currentNote.user.name)
+        .setContent((currentNote.content || ""))
+        .setBottomLabel(currentNote.add_time)
+        .setMultiline(true);
+    widgetList.push(currentWidget);
+  }
+  return widgetList;
+}
+
+/*
+ * Get notes from pipedrive and add keyvalues to section
+ *
+ * @param {Section} section The section to add to
+ * @param {String} personId The id of the contact in Pipedrive
+ * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
+ * @return {Section} The section with the keyvalues for notes added
+ */
+function addPipedriveNoteDisplay(section, personId, limit){
+  limit = (limit ? limit : 50);
+  var widgets = getNoteWidgets(personId);
+  for(var i in widgets){
+    if(i < limit){
+      section.addWidget(widgets[i]);
+    }
+  }
+  return section;
+}
+
+/*
+ * Get activities from pipedrive and add keyvalues to section
+ *
+ * @param {Section} section The section to add to
+ * @param {String} personId The id of the contact in Pipedrive
+ * @param {[Strings]} excludeList Optional - A list of types of activities to exclude
+ * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
+ * @return {Section} The section with the keyvalues for actiivites added
+ */
+function addPipedriveActivityDisplay(activitySection, personId, excludeList, limit){
+  limit = (limit ? limit : 50);
+  var activities = PipedriveAPILibrary.getPersonActivities(personId);
+  activities = (activities ? activities.filter(function(x){return (excludeList || []).indexOf(x["type"]) < 0;}) : activities);
+  for(var i in activities){
+    if(i < limit){
+      var currentActivity = activities[i];
+      activitySection.addWidget(CardService.newKeyValue()
+        .setTopLabel(currentActivity.type)
+        .setContent((currentActivity.note_clean || ""))
+        .setBottomLabel(currentActivity.add_time)
+      );
+    }
+  }
+  return activitySection;
 }
 
 /*
@@ -113,20 +179,21 @@ function searchPipedrivePersonListSection(response, errorMsg){
  * @param {EventObject} e
  * @return {Card} Card with details on Pipedrive contact
  */
-function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
-  var personId = e.commonEventObject.parameters["personId"];
+function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
+  var personId = e.commonEventObject.parameters["pipedriveId"];
       
   var contactDetailSection = CardService.newCardSection();
   
   var contactDetails = PipedriveAPILibrary.getPersonDetails(personId);
   var dealInfo = PipedriveAPILibrary.getPersonDeals(personId);
-  
-  var card = CardService.newCardBuilder()
-    .setHeader(CardService.newCardHeader()
-      .setTitle(contactDetails.name)
-      .setSubtitle((contactDetails.org_id && contactDetails.org_id.name ? contactDetails.org_id.name : "No Linked Organization"))
-      .setImageUrl(IMAGES.PIPEDRIVE));
-  
+  var title = contactDetails.name;
+  var subtitle = (contactDetails.org_id && contactDetails.org_id.name ? contactDetails.org_id.name : "No Linked Organization");
+  var header = CardService.newCardHeader()
+      .setTitle((message ? message+" | " : "")+title)
+      .setSubtitle(subtitle)
+      .setImageUrl(IMAGES.PIPEDRIVE);
+  var card = CardService.newCardBuilder().setHeader(header);
+
   var nameKeyValue = CardService.newKeyValue().setMultiline(true)
     .setTopLabel("Contact Type: "+(contactDetails.type || "Not Set"))
     .setContent(formatLink(contactDetails.name)).setOpenLink(CardService.newOpenLink()
@@ -154,39 +221,26 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
     .setContent(otherInfo)
   );
   
+  var parameters = {
+    'pipedriveId':personId, 
+    'title':title, 
+    'subtitle':subtitle
+  };
   var notesSection = CardService.newCardSection().setHeader("Notes: "+contactDetails["notes_count"]);
-  var addNoteButton = CardService.newTextButton().setText("Add Note").setOnClickAction(CardService.newAction().setFunctionName('addPipedriveNote'));
+  var addNoteButton = CardService.newTextButton().setText("Add Note").setOnClickAction(CardService.newAction().setFunctionName('buildAddPipedriveNotesCard').setParameters(parameters));
   notesSection.addWidget(addNoteButton);
 
   if(contactDetails["notes_count"] > 0){
-    var notes = PipedriveAPILibrary.getPersonNotes(personId);
-    for(var i in notes){
-      var currentNote = notes[i];
-      notesSection.addWidget(CardService.newKeyValue()
-          .setTopLabel(currentNote.user.name)
-          .setContent((currentNote.content || ""))
-          .setBottomLabel(currentNote.add_time)
-      );
-    }
+    notesSection = addPipedriveNoteDisplay(notesSection, personId);
   }
   
   var activitySection = CardService.newCardSection().setHeader("Activities: "+contactDetails["done_activities_count"]+" Done / "+contactDetails["undone_activities_count"]+" Pending");
   var addActivityButton = CardService.newTextButton().setText("Add Activity").setOnClickAction(CardService.newAction().setFunctionName('addPipedriveActivity'));
   activitySection.addWidget(addActivityButton);
+  
   if(contactDetails["activities_count"] > 0){
     activitySection.setNumUncollapsibleWidgets(2).setCollapsible(true);
-    var activities = PipedriveAPILibrary.getPersonActivities(personId);
-    activities = (activities ? activities.filter(function(x){return x["type"] != "email";}) : activities);
-    for(var i in activities){
-      if(i < 50){
-        var currentActivity = activities[i];
-        activitySection.addWidget(CardService.newKeyValue()
-          .setTopLabel(currentActivity.type)
-          .setContent((currentActivity.note_clean || ""))
-          .setBottomLabel(currentActivity.add_time)
-        );
-      }
-    }
+    activitySection = addPipedriveActivityDisplay(activitySection, personId, ["email"], 50);
   }
   
   var dealSection = CardService.newCardSection().setHeader("Lendesk Deals: "+(dealInfo["open"] || "0")+" Open / "+(dealInfo["won"] || "0")+" Won / "+(dealInfo["lost"] || "0")+" Lost");
@@ -227,13 +281,4 @@ function buildPipedrivePersonDetailsCard(e, actionResponseBoolean) {
   else{
     return card.build();
   }
-}
-
-
-function addPipedriveNote(e){
-
-}
-
-function addPipedriveActivity(e){
-  
 }
