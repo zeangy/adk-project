@@ -108,7 +108,7 @@ function searchPipedrivePersonListSection(response, errorMsg){
 }
 
 /*
- * Get notes from pipedrive and add keyvalues to section
+ * Get notes from pipedrive and create key value widgets
  *
  * @param {String} personId The id of the contact in Pipedrive
  * @return {[Widgets]} Keyvalue widgets for each note
@@ -129,48 +129,121 @@ function getNoteWidgets(personId){
 }
 
 /*
- * Get notes from pipedrive and add keyvalues to section
+ * Get activities from pipedrive and create key value widgets
  *
- * @param {Section} section The section to add to
  * @param {String} personId The id of the contact in Pipedrive
- * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
- * @return {Section} The section with the keyvalues for notes added
+ * @param {[Strings]} excludeList Optional - A list of types of activities to exclude
+ * @return {[Widgets]} Keyvalue widgets for each activity
  */
-function addPipedriveNoteDisplay(section, personId, limit){
+function getActivityWidgets(personId, excludeList){
+  var widgetList = [];
+  var activities = PipedriveAPILibrary.getPersonActivities(personId);
+  activities = (activities ? activities.filter(function(x){return (excludeList || []).indexOf(x["type"]) < 0;}) : activities);
+  for(var i in activities){
+    var currentActivity = activities[i];
+    var currentWidget = CardService.newKeyValue()
+        .setTopLabel(currentActivity.type)
+        .setContent((currentActivity.note_clean || ""))
+        .setBottomLabel(currentActivity.add_time);
+    widgetList.push(currentWidget);
+  }
+  return widgetList;
+}
+
+/*
+ * Generate a section with list of keyvalues and optional add button
+ *
+ * @param {String} type The type: activity, note, or deal
+ * @param {[Widgets]} widgets A list of keyvalues to display
+ * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
+ * @param {Button} button Optional - the add button to display at the top of the section, null if no button should be displayed
+ * @param {Boolean} addButton Optional - whether to include the add button at the top of the section
+ * @param {String} customHeader Optional - the header for the section, if null then a default header will be assigned
+ * @return {Section} A section with an add button at the top if specified and a list of keyvalues added
+ */
+function pipedriveKeyValueDisplaySection(type, widgets, limit, button, customHeader){
+  var headerName = PIPEDRIVE_TYPE_MAP[type]["headerName"];
+  
+  var section = CardService.newCardSection();
+  if(button){
+    section.addWidget(button);
+  }
   limit = (limit ? limit : 50);
-  var widgets = getNoteWidgets(personId);
+  var count = 0;
   for(var i in widgets){
     if(i < limit){
       section.addWidget(widgets[i]);
     }
+    count ++;
   }
+  if(count < 1 && !button){
+    section.addWidget(CardService.newKeyValue().setContent("<i>No "+headerName+" Found</i>"));
+  }
+  
+  section.setHeader((customHeader ? customHeader : headerName+" ("+count+")"));
+  
   return section;
 }
 
 /*
- * Get activities from pipedrive and add keyvalues to section
+ * Create Add button for activities or notes
  *
- * @param {Section} section The section to add to
+ * @param {String} type The type: activity or note
+ * @param {String} pipedriveId The ID of the entry, if applicable
+ * @param {String} title Optional - title for page accessed by clicking add button
+ * @param {String} subtitle Optional - subtitle for page accessed by clicking add button
+ * @return {Button} An add button of the specified type
+ */
+function createPipedriveAddButton(type, pipedriveId, title, subtitle){
+  var parameters = {
+    'pipedriveId':pipedriveId, 
+    'title':title, 
+    'subtitle':subtitle
+  };
+  var button = CardService.newTextButton()
+    .setText(PIPEDRIVE_TYPE_MAP[type]["buttonTitle"])
+    .setOnClickAction(CardService.newAction()
+    .setFunctionName(PIPEDRIVE_TYPE_MAP[type]["onClickFunctionName"])
+    .setParameters(parameters));
+  return button;
+}
+
+/*
+ * Get notes from pipedrive and create section with list of keyvalues and optional add button
+ *
+ * @param {String} personId The id of the contact in Pipedrive
+ * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
+ * @param {String} customHeader Optional - the custom header to use for the section
+ * @param {Boolean} addButton Optional - whether to include the add button at the top of the section
+ * @param {String} title Optional - title for page accessed by clicking add button
+ * @param {String} subtitle Optional - subtitle for page accessed by clicking add button
+ * @return {Section} The section with the keyvalues for activities added
+ */
+function pipedriveNoteDisplaySection(personId, limit, customHeader, addButton, title, subtitle){
+  var type = "note";
+  var button = (addButton ? createPipedriveAddButton(type, personId, title, subtitle) : addButton);
+  var widgets = getNoteWidgets(personId);
+  var section = pipedriveKeyValueDisplaySection(type, widgets, limit, button, customHeader);
+  return section;
+}
+/*
+ * Get notes from pipedrive and create section with list of keyvalues and optional add button
+ *
  * @param {String} personId The id of the contact in Pipedrive
  * @param {[Strings]} excludeList Optional - A list of types of activities to exclude
  * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
- * @return {Section} The section with the keyvalues for actiivites added
+ * @param {String} customHeader Optional - the custom header to use for the section
+ * @param {Boolean} addButton Optional - whether to include the add button at the top of the section
+ * @param {String} title Optional - title for page accessed by clicking add button
+ * @param {String} subtitle Optional - subtitle for page accessed by clicking add button
+ * @return {Section} The section with the keyvalues for activities added
  */
-function addPipedriveActivityDisplay(activitySection, personId, excludeList, limit){
-  limit = (limit ? limit : 50);
-  var activities = PipedriveAPILibrary.getPersonActivities(personId);
-  activities = (activities ? activities.filter(function(x){return (excludeList || []).indexOf(x["type"]) < 0;}) : activities);
-  for(var i in activities){
-    if(i < limit){
-      var currentActivity = activities[i];
-      activitySection.addWidget(CardService.newKeyValue()
-        .setTopLabel(currentActivity.type)
-        .setContent((currentActivity.note_clean || ""))
-        .setBottomLabel(currentActivity.add_time)
-      );
-    }
-  }
-  return activitySection;
+function pipedriveActivityDisplaySection(personId, excludeList, limit, customHeader, addButton, title, subtitle){
+  var type = "activity";
+  var button = (addButton ? createPipedriveAddButton(type, personId, title, subtitle) : addButton);
+  var widgets = getActivityWidgets(personId, excludeList);
+  var section = pipedriveKeyValueDisplaySection(type, widgets, limit, button, customHeader);
+  return section;
 }
 
 /*
@@ -226,21 +299,15 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
     'title':title, 
     'subtitle':subtitle
   };
-  var notesSection = CardService.newCardSection().setHeader("Notes: "+contactDetails["notes_count"]);
-  var addNoteButton = CardService.newTextButton().setText("Add Note").setOnClickAction(CardService.newAction().setFunctionName('buildAddPipedriveNotesCard').setParameters(parameters));
-  notesSection.addWidget(addNoteButton);
-
-  if(contactDetails["notes_count"] > 0){
-    notesSection = addPipedriveNoteDisplay(notesSection, personId);
-  }
   
-  var activitySection = CardService.newCardSection().setHeader("Activities: "+contactDetails["done_activities_count"]+" Done / "+contactDetails["undone_activities_count"]+" Pending");
-  var addActivityButton = CardService.newTextButton().setText("Add Activity").setOnClickAction(CardService.newAction().setFunctionName('addPipedriveActivity'));
-  activitySection.addWidget(addActivityButton);
+  var noteHeader = "Notes: "+contactDetails["notes_count"];
+  var notesSection = pipedriveNoteDisplaySection(personId, 50, noteHeader, true, title, subtitle);
+  
+  var activityHeader = "Activities: "+contactDetails["done_activities_count"]+" Done / "+contactDetails["undone_activities_count"]+" Pending";
+  var activitySection = pipedriveActivityDisplaySection(personId, ["email"], 50, activityHeader, true, title, subtitle);
   
   if(contactDetails["activities_count"] > 0){
     activitySection.setNumUncollapsibleWidgets(2).setCollapsible(true);
-    activitySection = addPipedriveActivityDisplay(activitySection, personId, ["email"], 50);
   }
   
   var dealSection = CardService.newCardSection().setHeader("Lendesk Deals: "+(dealInfo["open"] || "0")+" Open / "+(dealInfo["won"] || "0")+" Won / "+(dealInfo["lost"] || "0")+" Lost");

@@ -99,6 +99,19 @@ var IMAGES = {
   "PIPEDRIVE" : "https://cdn.us-east-1.pipedriveassets.com/chrome-extension-assets/icons/favicon.ico"
 };
 
+var PIPEDRIVE_TYPE_MAP = {
+  "activity" : {
+    "buttonTitle" : "Add Activity",
+    "onClickFunctionName" : "buildAddPipedriveActivitiesCard",
+    "headerName" : "Activities"
+  },
+  "note" : {
+    "buttonTitle" : "Add Note",
+    "onClickFunctionName" : "buildAddPipedriveNotesCard",
+    "headerName" : "Notes"
+  }
+};
+
 // Lendesk logo
 // "https://downloads.intercomcdn.com/i/o/60003331/83385382c7bf772aeb06dbd4/profile_logo.png"
 // "http://files.conconi.ca/lendesk_logo.png"

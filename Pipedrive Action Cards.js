@@ -69,19 +69,62 @@ function buildAddPipedriveNotesCard(e){
   
   card.addSection(addNoteSection);
   
-  var displayNoteSection = CardService.newCardSection();
-  
-  var noteWidgetList = getNoteWidgets(pipedriveId);
-  var numNotes = 0;
-  for(var i in noteWidgetList){
-    displayNoteSection.addWidget(noteWidgetList[i]);
-    numNotes ++;
-  }
-  displayNoteSection.setHeader("Notes ("+numNotes+")");
-  if(numNotes < 1){
-    displayNoteSection.addWidget(CardService.newKeyValue().setContent("<i>No notes found</i>"));
-  }
+  var displayNoteSection = pipedriveNoteDisplaySection(pipedriveId);
   card.addSection(displayNoteSection);
+  
+  var actionResponse = CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation()
+       .pushCard(card.build()))
+    .build();
+    
+  return actionResponse;
+}
+
+/*
+ * Add a new activity to a Pipedrive and view all activities if on contact page
+ *
+ * @param {EventObject} e
+ * @returns {ActionResponse}
+ */
+function buildAddPipedriveActivitiesCard(e){
+  
+  var pipedriveId = (e.commonEventObject.parameters.pipedriveId || null);
+  var title = (e.commonEventObject.parameters.title || "Add New Activity");
+  var subtitle = (e.commonEventObject.parameters.subtitle || "");
+  
+  var card = CardService.newCardBuilder()
+    .setHeader(CardService.newCardHeader()
+    .setTitle(title)
+    .setSubtitle(subtitle)
+    .setImageUrl(IMAGES.PIPEDRIVE));
+  
+  var userDetails = LENDESK_USERS[getUserName()];
+  var currentUserTeam = userDetails.team;
+  var fontColour = userDetails.colour;
+  
+  var addActivitySection = CardService.newCardSection();
+  
+  addActivitySection.addWidget(CardService.newTextInput()
+    .setMultiline(true)
+    .setTitle("ADD NEW ACTIVITY")
+    .setFieldName("activity")
+  );
+    
+  var parameters = {
+    "pipedriveId" : pipedriveId,
+    "createdById" : userDetails.id
+  };
+  
+  addActivitySection.addWidget(CardService.newTextButton()
+    .setText("Submit")
+    .setOnClickAction(CardService.newAction()
+    .setFunctionName("addPipedriveActivity")
+    .setParameters(parameters)));
+  
+  card.addSection(addActivitySection);
+  
+  var displayActivitySection = pipedriveActivityDisplaySection(pipedriveId, [], 50);
+  card.addSection(displayActivitySection);
   
   var actionResponse = CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation()
