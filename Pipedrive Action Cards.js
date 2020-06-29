@@ -1,29 +1,3 @@
-
-function pipedriveActionButtonSet(pipedriveId, title, subtitle){
-  var parameters = {
-    "pipedriveId" : pipedriveId,
-    "createdById" : LENDESK_USERS[getUserName()]["id"], 
-    "subtitle" : subtitle,
-    "name" : title
-  };
-  
-  var buttonSet = CardService.newButtonSet();
-  var activityMap = ACTIVITY_ICON_MAP;
-  for(var i in activityMap){
-    parameters["activity_type"] = i;
-    parameters["title"] = "Add New "+firstLetterUppercase(i)+" For "+title;
-    var button = CardService.newImageButton()
-      .setIcon(activityMap[i])
-      .setAltText("Add "+i)
-      .setOnClickAction(CardService.newAction()
-        .setFunctionName((i == "note" ? "buildAddPipedriveNotesCard" : "buildAddPipedriveActivitiesCard"))
-        .setParameters(parameters)
-      );
-    buttonSet.addButton(button);
-  }
-  return buttonSet;
-}
-
 /*
  * Upload note to Pipedrive contact
  *

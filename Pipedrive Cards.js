@@ -108,6 +108,62 @@ function searchPipedrivePersonListSection(response, errorMsg){
 }
 
 /*
+ * Create button set with icons for options to add notes and activities
+ *
+ * @param {String} pipedriveId The pipedrive contact id
+ * @param {String} title Title for the header, nomally the name of the contact
+ * @param {String} subtitle Title for the header, nomally the name of the organization
+ * @return {ButtonSet} A button set of icons with actions functions attached
+ */
+function pipedriveActionButtonSet(pipedriveId, title, subtitle){
+  var parameters = {
+    "pipedriveId" : pipedriveId,
+    "createdById" : LENDESK_USERS[getUserName()]["id"], 
+    "subtitle" : subtitle,
+    "name" : title
+  };
+  
+  var buttonSet = CardService.newButtonSet();
+  var activityMap = ACTIVITY_ICON_MAP;
+  for(var i in activityMap){
+    parameters["activity_type"] = i;
+    parameters["title"] = "Add New "+firstLetterUppercase(i)+" For "+title;
+    var button = CardService.newImageButton()
+      .setIcon(activityMap[i])
+      .setAltText("Add "+i)
+      .setOnClickAction(CardService.newAction()
+        .setFunctionName((i == "note" ? "buildAddPipedriveNotesCard" : "buildAddPipedriveActivitiesCard"))
+        .setParameters(parameters)
+      );
+    buttonSet.addButton(button);
+  }
+  return buttonSet;
+}
+
+/*
+ * NOT IN USE - Create Add button for activities or notes
+ *
+ * @param {String} type The type: activity or note
+ * @param {String} pipedriveId The ID of the entry, if applicable
+ * @param {String} title Optional - title for page accessed by clicking add button
+ * @param {String} subtitle Optional - subtitle for page accessed by clicking add button
+ * @return {Button} An add button of the specified type
+ */
+function createPipedriveAddButton(type, pipedriveId, title, subtitle){
+  var parameters = {
+    'pipedriveId':pipedriveId, 
+    'title':title, 
+    'subtitle':subtitle
+  };
+  var button = CardService.newTextButton()
+    .setText(PIPEDRIVE_TYPE_MAP[type]["buttonTitle"])
+    .setOnClickAction(CardService.newAction()
+    .setFunctionName(PIPEDRIVE_TYPE_MAP[type]["onClickFunctionName"])
+    .setParameters(parameters));
+  return button;
+}
+
+/*
  * Get notes from pipedrive and create key value widgets
  *
  * @param {String} personId The id of the contact in Pipedrive
@@ -202,29 +258,6 @@ function pipedriveKeyValueDisplaySection(type, widgets, limit){
   section.setHeader(headerName+" ("+count+")");
   
   return section;
-}
-
-/*
- * Create Add button for activities or notes
- *
- * @param {String} type The type: activity or note
- * @param {String} pipedriveId The ID of the entry, if applicable
- * @param {String} title Optional - title for page accessed by clicking add button
- * @param {String} subtitle Optional - subtitle for page accessed by clicking add button
- * @return {Button} An add button of the specified type
- */
-function createPipedriveAddButton(type, pipedriveId, title, subtitle){
-  var parameters = {
-    'pipedriveId':pipedriveId, 
-    'title':title, 
-    'subtitle':subtitle
-  };
-  var button = CardService.newTextButton()
-    .setText(PIPEDRIVE_TYPE_MAP[type]["buttonTitle"])
-    .setOnClickAction(CardService.newAction()
-    .setFunctionName(PIPEDRIVE_TYPE_MAP[type]["onClickFunctionName"])
-    .setParameters(parameters));
-  return button;
 }
 
 /*
