@@ -109,6 +109,11 @@ var PIPEDRIVE_TYPE_MAP = {
     "buttonTitle" : "Add Note",
     "onClickFunctionName" : "buildAddPipedriveNotesCard",
     "headerName" : "Notes"
+  },
+  "deal" : {
+    "buttonTitle" : "Add Note",
+    "onClickFunctionName" : "buildAddPipedriveNotesCard",
+    "headerName" : "Notes"
   }
 };
 

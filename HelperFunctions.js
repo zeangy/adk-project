@@ -71,3 +71,20 @@ function formatLink(text){
   var linkColour = "#1257e0";
   return "<font color=\""+linkColour+"\">"+text+"</font>";
 }
+
+/*
+ * Set the first character in a string to be uppercase
+ *
+ * @param {String} text The string to uppercase the first letter of
+ * @return {String} The submitted text with the first letter changed to uppercase
+ */
+function firstLetterUppercase(text){
+  var formattedText = text;
+  if(text.length > 1){
+    formattedText = text.charAt(0).toUpperCase()+text.slice(1);
+  }
+  else{
+    formattedText = text.toUpperCase();
+  }
+  return formattedText;
+}

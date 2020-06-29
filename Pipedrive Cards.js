@@ -246,6 +246,29 @@ function pipedriveActivityDisplaySection(personId, excludeList, limit, customHea
   return section;
 }
 
+function getDealWidgets(dealDetails){
+  var widgetList = [];
+  for(var i in dealDetails){
+    var currentDeal = dealDetails[i];
+    widgetList.push(CardService.newKeyValue()
+      .setContent(currentDeal["title"])
+      .setTopLabel(currentDeal["status"].toString())
+      .setBottomLabel("Last Updated: "+currentDeal["updated"].toString())
+      .setOnClickAction(CardService.newAction()
+        .setFunctionName('onApplicationClick')
+        .setParameters({'applicationId':currentDeal["lendeskId"], 'applicant_name':currentDeal["title"], 'referral_category': ""}))
+      );
+  }
+  return widgetList;
+}
+
+function pipedriveDealDisplaySection(dealDetails, limit, customHeader){
+  var type = "deal";
+  var widgets = getDealWidgets(dealDetails);
+  var section = pipedriveKeyValueDisplaySection(type, widgets, limit, false, customHeader);
+  return section;
+}
+
 /*
  * Creates a card with Pipedrive contact details
  *
@@ -266,7 +289,7 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
       .setSubtitle(subtitle)
       .setImageUrl(IMAGES.PIPEDRIVE);
   var card = CardService.newCardBuilder().setHeader(header);
-
+  
   var nameKeyValue = CardService.newKeyValue().setMultiline(true)
     .setTopLabel("Contact Type: "+(contactDetails.type || "Not Set"))
     .setContent(formatLink(contactDetails.name)).setOpenLink(CardService.newOpenLink()
@@ -294,49 +317,24 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
     .setContent(otherInfo)
   );
   
-  var parameters = {
-    'pipedriveId':personId, 
-    'title':title, 
-    'subtitle':subtitle
-  };
-  
+  contactDetailSection.addWidget(pipedriveActionButtonSet(personId, title, subtitle));
+
   var noteHeader = "Notes: "+contactDetails["notes_count"];
-  var notesSection = pipedriveNoteDisplaySection(personId, 50, noteHeader, true, title, subtitle);
+  var notesSection = pipedriveNoteDisplaySection(personId, 50, noteHeader);
+  notesSection.setNumUncollapsibleWidgets(2).setCollapsible(true);
   
   var activityHeader = "Activities: "+contactDetails["done_activities_count"]+" Done / "+contactDetails["undone_activities_count"]+" Pending";
-  var activitySection = pipedriveActivityDisplaySection(personId, ["email"], 50, activityHeader, true, title, subtitle);
+  var activitySection = pipedriveActivityDisplaySection(personId, ["email"], 50, activityHeader);
+  activitySection.setNumUncollapsibleWidgets(2).setCollapsible(true);
   
-  if(contactDetails["activities_count"] > 0){
-    activitySection.setNumUncollapsibleWidgets(2).setCollapsible(true);
-  }
-  
-  var dealSection = CardService.newCardSection().setHeader("Lendesk Deals: "+(dealInfo["open"] || "0")+" Open / "+(dealInfo["won"] || "0")+" Won / "+(dealInfo["lost"] || "0")+" Lost");
-  var dealDetails = dealInfo.dealDetails;
-  if(!dealDetails || dealDetails.length < 1) {
-    dealSection.addWidget(CardService.newTextParagraph().setText("<i>No Deals Found</i>"));
-  }
-  else{
-    dealSection.setNumUncollapsibleWidgets(2).setCollapsible(true);
-    for(var i in dealDetails){
-      if(i < 50){
-        var currentDeal = dealDetails[i];
-        dealSection.addWidget(CardService.newKeyValue()
-          .setContent(currentDeal["title"])
-          .setTopLabel(currentDeal["status"].toString())
-          .setBottomLabel("Last Updated: "+currentDeal["updated"].toString())
-          .setOnClickAction(CardService.newAction()
-            .setFunctionName('onApplicationClick')
-            .setParameters({'applicationId':currentDeal["lendeskId"], 'applicant_name':currentDeal["title"], 'referral_category': ""}))
-          );
-      }
-    }
-  }
-  
+  var dealHeader = "Lendesk Deals: "+(dealInfo["open"] || "0")+" Open / "+(dealInfo["won"] || "0")+" Won / "+(dealInfo["lost"] || "0")+" Lost";
+  var dealSection = pipedriveDealDisplaySection(dealInfo.dealDetails, 50, dealHeader); 
+  dealSection.setNumUncollapsibleWidgets(2).setCollapsible(true);
+
   card.addSection(contactDetailSection);
   card.addSection(notesSection);
   card.addSection(activitySection);
   card.addSection(dealSection);
-  
     
   if(actionResponseBoolean){
     var actionResponse = CardService.newActionResponseBuilder()
