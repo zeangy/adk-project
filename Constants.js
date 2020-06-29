@@ -117,6 +117,16 @@ var PIPEDRIVE_TYPE_MAP = {
   }
 };
 
+var ACTIVITY_ICON_MAP = {
+  "note" : CardService.Icon.DESCRIPTION,
+  "call" : CardService.Icon.PHONE,
+  "meeting" : CardService.Icon.EVENT_PERFORMER,
+  "task" : CardService.Icon.CLOCK,
+  "deadline" : CardService.Icon.INVITE,
+  "email" : CardService.Icon.EMAIL,
+  "lunch" : CardService.Icon.RESTAURANT_ICON
+};
+
 // Lendesk logo
 // "https://downloads.intercomcdn.com/i/o/60003331/83385382c7bf772aeb06dbd4/profile_logo.png"
 // "http://files.conconi.ca/lendesk_logo.png"

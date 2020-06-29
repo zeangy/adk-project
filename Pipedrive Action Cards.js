@@ -1,12 +1,3 @@
-var ACTIVITY_ICON_MAP = {
-  "note" : CardService.Icon.DESCRIPTION,
-  "call" : CardService.Icon.PHONE,
-  "meeting" : CardService.Icon.EVENT_PERFORMER,
-  "task" : CardService.Icon.CLOCK,
-  "deadline" : CardService.Icon.INVITE,
-  "email" : CardService.Icon.EMAIL,
-  "lunch" : CardService.Icon.RESTAURANT_ICON
-};
 
 function pipedriveActionButtonSet(pipedriveId, title, subtitle){
   var parameters = {
@@ -180,7 +171,7 @@ function buildAddPipedriveActivitiesCard(e){
   addActivitySection.addWidget(assigneeSelection);
   
   addActivitySection.addWidget(CardService.newTextButton()
-    .setText("Submit")
+    .setText("Submit").setDisabled(true)
     .setOnClickAction(CardService.newAction()
     .setFunctionName("addPipedriveActivity")
     .setParameters(parameters)));

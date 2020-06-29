@@ -151,36 +151,55 @@ function getActivityWidgets(personId, excludeList){
 }
 
 /*
- * Generate a section with list of keyvalues and optional add button
+ * Create key values from deal details
+ *
+ * @param {JSON} dealDetails The deal details from Pipedrive
+ * @return {[Widgets]} Keyvalue widgets for each deal
+ */
+function getDealWidgets(dealDetails){
+  var widgetList = [];
+  for(var i in dealDetails){
+    var currentDeal = dealDetails[i];
+    widgetList.push(CardService.newKeyValue()
+      .setContent(currentDeal["title"])
+      .setTopLabel(currentDeal["status"].toString())
+      .setBottomLabel("Last Updated: "+currentDeal["updated"].toString())
+      .setOnClickAction(CardService.newAction()
+        .setFunctionName('onApplicationClick')
+        .setParameters({'applicationId':currentDeal["lendeskId"], 'applicant_name':currentDeal["title"], 'referral_category': ""}))
+      );
+  }
+  return widgetList;
+}
+
+/*
+ * Generate a section with list of keyvalues
  *
  * @param {String} type The type: activity, note, or deal
- * @param {[Widgets]} widgets A list of keyvalues to display
+ * @param {[Widgets]} widgets A list of widgets to display
  * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
- * @param {Button} button Optional - the add button to display at the top of the section, null if no button should be displayed
- * @param {Boolean} addButton Optional - whether to include the add button at the top of the section
- * @param {String} customHeader Optional - the header for the section, if null then a default header will be assigned
- * @return {Section} A section with an add button at the top if specified and a list of keyvalues added
+ * @return {Section} A section with the widgets specified in the widgets list added
  */
-function pipedriveKeyValueDisplaySection(type, widgets, limit, button, customHeader){
+function pipedriveKeyValueDisplaySection(type, widgets, limit){
   var headerName = PIPEDRIVE_TYPE_MAP[type]["headerName"];
-  
   var section = CardService.newCardSection();
-  if(button){
-    section.addWidget(button);
-  }
+  
   limit = (limit ? limit : 50);
+  
   var count = 0;
+  var displayCount = 0;
   for(var i in widgets){
     if(i < limit){
       section.addWidget(widgets[i]);
+      displayCount ++;
     }
     count ++;
   }
-  if(count < 1 && !button){
+  if(displayCount < 1){
     section.addWidget(CardService.newKeyValue().setContent("<i>No "+headerName+" Found</i>"));
   }
   
-  section.setHeader((customHeader ? customHeader : headerName+" ("+count+")"));
+  section.setHeader(headerName+" ("+count+")");
   
   return section;
 }
@@ -209,63 +228,48 @@ function createPipedriveAddButton(type, pipedriveId, title, subtitle){
 }
 
 /*
- * Get notes from pipedrive and create section with list of keyvalues and optional add button
+ * Get notes from pipedrive and create section with list of keyvalues and optional additional widgets at top
  *
  * @param {String} personId The id of the contact in Pipedrive
  * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
- * @param {String} customHeader Optional - the custom header to use for the section
- * @param {Boolean} addButton Optional - whether to include the add button at the top of the section
- * @param {String} title Optional - title for page accessed by clicking add button
- * @param {String} subtitle Optional - subtitle for page accessed by clicking add button
+ * @param {[Widgets]} otherWidgets Optional - a list of widgets to display at top of section
  * @return {Section} The section with the keyvalues for activities added
  */
-function pipedriveNoteDisplaySection(personId, limit, customHeader, addButton, title, subtitle){
+function pipedriveNoteDisplaySection(personId, limit, otherWidgets){
   var type = "note";
-  var button = (addButton ? createPipedriveAddButton(type, personId, title, subtitle) : addButton);
-  var widgets = getNoteWidgets(personId);
-  var section = pipedriveKeyValueDisplaySection(type, widgets, limit, button, customHeader);
+  var widgets = (otherWidgets || []).concat(getNoteWidgets(personId));
+  var section = pipedriveKeyValueDisplaySection(type, widgets, limit);
   return section;
 }
+
 /*
- * Get notes from pipedrive and create section with list of keyvalues and optional add button
+ * Get notes from pipedrive and create section with list of keyvalues and optional additional widgets at top
  *
  * @param {String} personId The id of the contact in Pipedrive
  * @param {[Strings]} excludeList Optional - A list of types of activities to exclude
  * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
- * @param {String} customHeader Optional - the custom header to use for the section
- * @param {Boolean} addButton Optional - whether to include the add button at the top of the section
- * @param {String} title Optional - title for page accessed by clicking add button
- * @param {String} subtitle Optional - subtitle for page accessed by clicking add button
+ * @param {[Widgets]} otherWidgets Optional - a list of widgets to display at top of section
  * @return {Section} The section with the keyvalues for activities added
  */
-function pipedriveActivityDisplaySection(personId, excludeList, limit, customHeader, addButton, title, subtitle){
+function pipedriveActivityDisplaySection(personId, excludeList, limit, otherWidgets){
   var type = "activity";
-  var button = (addButton ? createPipedriveAddButton(type, personId, title, subtitle) : addButton);
-  var widgets = getActivityWidgets(personId, excludeList);
-  var section = pipedriveKeyValueDisplaySection(type, widgets, limit, button, customHeader);
+  var widgets = (otherWidgets || []).concat(getActivityWidgets(personId, excludeList));
+  var section = pipedriveKeyValueDisplaySection(type, widgets, limit);
   return section;
 }
 
-function getDealWidgets(dealDetails){
-  var widgetList = [];
-  for(var i in dealDetails){
-    var currentDeal = dealDetails[i];
-    widgetList.push(CardService.newKeyValue()
-      .setContent(currentDeal["title"])
-      .setTopLabel(currentDeal["status"].toString())
-      .setBottomLabel("Last Updated: "+currentDeal["updated"].toString())
-      .setOnClickAction(CardService.newAction()
-        .setFunctionName('onApplicationClick')
-        .setParameters({'applicationId':currentDeal["lendeskId"], 'applicant_name':currentDeal["title"], 'referral_category': ""}))
-      );
-  }
-  return widgetList;
-}
-
-function pipedriveDealDisplaySection(dealDetails, limit, customHeader){
+/*
+ * Create key values from deal details
+ *
+ * @param {JSON} dealDetails The deal details from Pipedrive
+ * @param {Number} limit Optional - the limit of number of keyvalues to display, 50 if not set
+ * @param {[Widgets]} otherWidgets Optional - a list of widgets to display at top of section
+ * @return {Section} The section with the keyvalues for deals
+ */
+function pipedriveDealDisplaySection(dealDetails, limit, otherWidgets){
   var type = "deal";
-  var widgets = getDealWidgets(dealDetails);
-  var section = pipedriveKeyValueDisplaySection(type, widgets, limit, false, customHeader);
+  var widgets = (otherWidgets || []).concat(getDealWidgets(dealDetails));
+  var section = pipedriveKeyValueDisplaySection(type, widgets, limit);
   return section;
 }
 
@@ -319,17 +323,23 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   
   contactDetailSection.addWidget(pipedriveActionButtonSet(personId, title, subtitle));
 
+  var notesSection = pipedriveNoteDisplaySection(personId);
   var noteHeader = "Notes: "+contactDetails["notes_count"];
-  var notesSection = pipedriveNoteDisplaySection(personId, 50, noteHeader);
-  notesSection.setNumUncollapsibleWidgets(2).setCollapsible(true);
+  notesSection.setHeader(noteHeader)
+    .setNumUncollapsibleWidgets(2)
+    .setCollapsible(true);
   
+  var activitySection = pipedriveActivityDisplaySection(personId, ["email"]);
   var activityHeader = "Activities: "+contactDetails["done_activities_count"]+" Done / "+contactDetails["undone_activities_count"]+" Pending";
-  var activitySection = pipedriveActivityDisplaySection(personId, ["email"], 50, activityHeader);
-  activitySection.setNumUncollapsibleWidgets(2).setCollapsible(true);
+  activitySection.setHeader(activityHeader)
+    .setNumUncollapsibleWidgets(2)
+    .setCollapsible(true);
   
+  var dealSection = pipedriveDealDisplaySection(dealInfo.dealDetails);
   var dealHeader = "Lendesk Deals: "+(dealInfo["open"] || "0")+" Open / "+(dealInfo["won"] || "0")+" Won / "+(dealInfo["lost"] || "0")+" Lost";
-  var dealSection = pipedriveDealDisplaySection(dealInfo.dealDetails, 50, dealHeader); 
-  dealSection.setNumUncollapsibleWidgets(2).setCollapsible(true);
+  dealSection.setHeader(dealHeader)
+    .setNumUncollapsibleWidgets(2)
+    .setCollapsible(true);
 
   card.addSection(contactDetailSection);
   card.addSection(notesSection);
