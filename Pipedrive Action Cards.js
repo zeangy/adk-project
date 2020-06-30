@@ -23,6 +23,54 @@ function addPipedriveNote(e){
 }
 
 function addPipedriveActivity(e){
+  var parameters = e.commonEventObject.parameters;
+  var formInputs = e.commonEventObject.formInputs;
+  var message = "Created Activity!";
+  
+  if(formInputs){
+    var activityType = parameters.activity_type;
+    var linkToId = parameters.pipedriveId;
+    var date = null;
+    var time = null;
+    var duration = null;
+    var startDateObj = (formInputs.start_date ? formInputs.start_date.dateTimeInput : null);
+    if(startDateObj){
+      var startDate = new Date(parseInt(startDateObj.msSinceEpoch));
+      if(startDateObj.hasDate){
+        date = Utilities.formatDate(msSinceEpochToDate(startDateObj.msSinceEpoch), "UTC", "YYYY-MM-dd");
+      }
+      if(startDateObj.hasTime){
+        time = Utilities.formatDate(startDate, "UTC", "hh:mm");
+      }
+      var endDateObj = (formInputs.end_date ? formInputs.end_date.dateTimeInput : null);
+      if(endDateObj){
+        var endDate = new Date(parseInt(endDateObj.msSinceEpoch));
+        if(endDateObj.hasDate){
+          var newEndDate = endDate;
+        }
+        else if(endDateObj.hasTime){
+          var newEndDate = new Date(startDate);
+          newEndDate.setHours(endDate.getHours());
+          newEndDate.setMinutes(endDate.getMinutes());
+        }
+        var difference = newEndDate.getTime() - startDate.getTime();
+        var hours = parseInt(Math.abs(difference) / (1000 * 60 * 60) );
+        var minutes = parseInt(Math.abs(difference) / (1000 * 60) % 60);
+        duration = hours+":"+minutes;
+      }
+    }
+    
+    var note = (formInputs.note ? formInputs.note.stringInputs.value : "").toString();
+    var subject = (formInputs.subject ? formInputs.subject.stringInputs.value : "").toString();
+    var createdById = (formInputs.assignee ? formInputs.assignee.stringInputs.value : null);
+    var markDone = (formInputs.complete ? true : false);
+    PipedriveAPILibrary.addActivity(activityType, subject, note, date, time, duration, createdById, markDone, linkToId, "persons");
+  }
+  else{
+    message = "Error: Activity not created";
+  }
+  
+  return buildPipedrivePersonDetailsCard(e, message, false);
   
 }
 
@@ -33,10 +81,10 @@ function addPipedriveActivity(e){
  * @returns {ActionResponse}
  */
 function buildAddPipedriveNotesCard(e){
-  
-  var pipedriveId = e.commonEventObject.parameters.pipedriveId;
-  var title = (e.commonEventObject.parameters.title || "Add Note");
-  var subtitle = (e.commonEventObject.parameters.subtitle || "");
+  var parameters = e.commonEventObject.parameters;
+  var pipedriveId = parameters.pipedriveId;
+  var title = (parameters.title || "Add Note");
+  var subtitle = (parameters.subtitle || "");
   
   var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader()
@@ -54,11 +102,6 @@ function buildAddPipedriveNotesCard(e){
     .setTitle("ADD NEW NOTE")
     .setFieldName("note")
   );
-    
-  var parameters = {
-    "pipedriveId" : pipedriveId,
-    "createdById" : userDetails.id
-  };
   
   addNoteSection.addWidget(CardService.newTextButton()
     .setText("Submit")
@@ -144,15 +187,21 @@ function buildAddPipedriveActivitiesCard(e){
   }
   addActivitySection.addWidget(assigneeSelection);
   
+  
+  addActivitySection.addWidget(CardService.newSelectionInput()
+    .setFieldName("complete")
+    .setType(CardService.SelectionInputType.CHECK_BOX).addItem("Mark as done", 1, true)
+  );
+    
   addActivitySection.addWidget(CardService.newTextButton()
-    .setText("Submit").setDisabled(true)
+    .setText("Submit")
     .setOnClickAction(CardService.newAction()
     .setFunctionName("addPipedriveActivity")
     .setParameters(parameters)));
  
   card.addSection(addActivitySection);
   
-  var displayActivitySection = pipedriveActivityDisplaySection(pipedriveId, [], 50);
+  var displayActivitySection = pipedriveActivityDisplaySection(pipedriveId);
   card.addSection(displayActivitySection);
   
   var actionResponse = CardService.newActionResponseBuilder()

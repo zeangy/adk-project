@@ -460,7 +460,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   
   if(pipedriveBrokerDetail.id){
     brokerKeyValue.setIconUrl(IMAGES.PIPEDRIVE);
-    brokerKeyValue.setOnClickAction(CardService.newAction().setFunctionName("buildPipedrivePersonDetailsCard").setParameters({'personId':pipedriveBrokerDetail.id}));
+    brokerKeyValue.setOnClickAction(CardService.newAction().setFunctionName("buildPipedrivePersonDetailsCard").setParameters({'pipedriveId':pipedriveBrokerDetail.id}));
   }
   
   section.addWidget(brokerKeyValue);
