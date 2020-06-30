@@ -43,6 +43,17 @@ var EXTERNAL_TEMPLATE_LIST = [
   "7b874147-2b53-4de5-86dd-90a8e94150ce"
 ];
 
+var ADD_ON_USERS = [
+  "Alexandra", 
+  "Aida",
+  "Sasha",
+  "Jared",
+  "Valerie",
+  "Thibaut",
+  "Karim",
+  "Lisa"
+];
+
 var LENDESK_USERS = {
   "Alexandra" : {
     "name" : "Alexandra",

@@ -119,7 +119,7 @@ function pipedriveActionButtonSet(pipedriveId, title, subtitle){
   var username = getUserName();
   var parameters = {
     "pipedriveId" : pipedriveId,
-    "createdById" : getUserDetails()["id"], 
+    "createdByName" : getUserName(), 
     "subtitle" : subtitle,
     "name" : title
   };

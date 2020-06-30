@@ -97,12 +97,12 @@ function firstLetterUppercase(text){
 function getUserName(){
   var email = Session.getActiveUser().getEmail();
   
-  for (var i in LENDESK_USERS){
+  for (var i in ADD_ON_USERS){
   
-    var reg = new RegExp(LENDESK_USERS[i].name, "i");
+    var reg = new RegExp(ADD_ON_USERS[i], "i");
     
     if(email.match(reg)){
-      return LENDESK_USERS[i].name;
+      return ADD_ON_USERS[i];
     }
   }
   

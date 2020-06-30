@@ -6,14 +6,14 @@
  */
 function addPipedriveNote(e){
   var pipedriveId = e.commonEventObject.parameters.pipedriveId;
-  var createdById = e.commonEventObject.parameters.createdById;
+  var createdByName = e.commonEventObject.parameters.createdByName;
   var formInputs = e.commonEventObject.formInputs;
   var note = (formInputs  ? formInputs.note.stringInputs.value : "");
   var parsedNote = note.toString().replace(/\n/g, "<br>");
   var message = "Created Note!";
   
   if(note){
-    PipedriveAPILibrary.addNoteToPerson(pipedriveId, parsedNote, createdById);
+    PipedriveAPILibrary.addNoteToPerson(pipedriveId, parsedNote, createdByName);
   }
   else{
     message = "Error: Note not created";
@@ -62,9 +62,9 @@ function addPipedriveActivity(e){
     
     var note = (formInputs.note ? formInputs.note.stringInputs.value : "").toString();
     var subject = (formInputs.subject ? formInputs.subject.stringInputs.value : "").toString();
-    var createdById = (formInputs.assignee ? formInputs.assignee.stringInputs.value : null);
+    var createdByName = (formInputs.assignee ? formInputs.assignee.stringInputs.value : null);
     var markDone = (formInputs.complete ? true : false);
-    PipedriveAPILibrary.addActivity(activityType, subject, note, date, time, duration, createdById, markDone, linkToId, "persons");
+    PipedriveAPILibrary.addActivity(activityType, subject, note, date, time, duration, createdByName, markDone, linkToId, "persons");
   }
   else{
     message = "Error: Activity not created";
@@ -134,6 +134,7 @@ function buildAddPipedriveActivitiesCard(e){
   var title = (parameters.title || "Add New Activity");
   var subtitle = (parameters.subtitle || "");
   var name = (parameters.name || "");
+  var userName = (parameters.createdByName || "");
   var activityType = (parameters.activity_type || "task");
   var formattedActivityType = firstLetterUppercase(activityType);
 
@@ -183,7 +184,7 @@ function buildAddPipedriveActivitiesCard(e){
   
   var users = PipedriveAPILibrary.USER_MAP_BY_NAME;
   for(var i in users){
-    assigneeSelection.addItem(i, users[i], (i == userDetails.name ? true : false));
+    assigneeSelection.addItem(i, i, (i == userName ? true : false));
   }
   addActivitySection.addWidget(assigneeSelection);
   
