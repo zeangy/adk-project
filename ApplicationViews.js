@@ -120,7 +120,10 @@ function getExpiredCommitmentApplications(e){
   
   selectionInput.addItem("All", "*", (dealLead == "*"));
   for(var i in LENDESK_USERS){
-    selectionInput.addItem(LENDESK_USERS[i].name, LENDESK_USERS[i].name, (dealLead == LENDESK_USERS[i].name));
+    var currentUser = LENDESK_USERS[i];
+    if(currentUser.team == "underwriting"){
+      selectionInput.addItem(currentUser.name, currentUser.name, (dealLead == currentUser.name));
+    }
   }  
   
   section.addWidget(selectionInput);

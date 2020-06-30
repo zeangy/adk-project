@@ -92,7 +92,7 @@ function buildAddPipedriveNotesCard(e){
     .setSubtitle(subtitle)
     .setImageUrl(IMAGES.PIPEDRIVE));
   
-  var userDetails = LENDESK_USERS[getUserName()];
+  var userDetails = getUserDetails();
   var fontColour = userDetails.colour;
   
   var addNoteSection = CardService.newCardSection();
@@ -143,7 +143,7 @@ function buildAddPipedriveActivitiesCard(e){
     .setSubtitle(subtitle)
     .setImageUrl(IMAGES.PIPEDRIVE));
   
-  var userDetails = LENDESK_USERS[getUserName()];
+  var userDetails = getUserDetails();
   var fontColour = userDetails.colour;
   
   var addActivitySection = CardService.newCardSection();
@@ -152,7 +152,7 @@ function buildAddPipedriveActivitiesCard(e){
     .setTopLabel(firstLetterUppercase(activityType)+" Linked To")
     .setContent(name)
     .setIcon(ACTIVITY_ICON_MAP[activityType])
-    .setButton(CardService.newTextButton().setText("Change").setOpenLink(CardService.newOpenLink().setUrl("google.ca")))
+    .setButton(CardService.newTextButton().setText("Change").setDisabled(true).setOpenLink(CardService.newOpenLink().setUrl("google.ca")))
   );
   
   addActivitySection.addWidget(CardService.newTextInput()

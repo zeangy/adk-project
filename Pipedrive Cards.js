@@ -116,9 +116,10 @@ function searchPipedrivePersonListSection(response, errorMsg){
  * @return {ButtonSet} A button set of icons with actions functions attached
  */
 function pipedriveActionButtonSet(pipedriveId, title, subtitle){
+  var username = getUserName();
   var parameters = {
     "pipedriveId" : pipedriveId,
-    "createdById" : LENDESK_USERS[getUserName()]["id"], 
+    "createdById" : getUserDetails()["id"], 
     "subtitle" : subtitle,
     "name" : title
   };

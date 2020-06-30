@@ -225,21 +225,6 @@ function buildDisplayPipelineCard(){
   return card.build();
 }
 
-function getUserName(){
-  var email = Session.getActiveUser().getEmail();
-  
-  for (var i in LENDESK_USERS){
-  
-    var reg = new RegExp(LENDESK_USERS[i].name, "i");
-    
-    if(email.match(reg)){
-      return LENDESK_USERS[i].name;
-    }
-  }
-  
-  return "";
-}
-
 function buildDisplayMyDealsCard(){
 
   var leader = getUserName(); 

@@ -318,8 +318,8 @@ function buildAddNotesCard(e){
   var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader()
     .setTitle(title));
-  
-  var userDetails = LENDESK_USERS[getUserName()];
+
+  var userDetails = getUserDetails();
   var currentUserTeam = userDetails.team;
   var fontColour = userDetails.colour;
   

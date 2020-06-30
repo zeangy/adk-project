@@ -85,6 +85,12 @@ var LENDESK_USERS = {
     "team" : "underwriting",
     "colour" : "#002a61", 
     "id" : "53b1d499-abf8-4567-9f20-5ce128624910"
+  },
+  "default" : {
+    "name" : "Unknown User",
+    "team" : "sales",
+    "colour" : "#002a61", 
+    "id" : "3c089840-4580-4d6f-8a7c-3921506d0409"
   }
 };
 

@@ -88,3 +88,36 @@ function firstLetterUppercase(text){
   }
   return formattedText;
 }
+
+/*
+ * Get first name of the current add-on user
+ *
+ * @return {String} The first name of the current user, blank if not found
+ */
+function getUserName(){
+  var email = Session.getActiveUser().getEmail();
+  
+  for (var i in LENDESK_USERS){
+  
+    var reg = new RegExp(LENDESK_USERS[i].name, "i");
+    
+    if(email.match(reg)){
+      return LENDESK_USERS[i].name;
+    }
+  }
+  
+  return "";
+}
+
+/*
+ * Get details of the current add-on user
+ *
+ * @param {String} Optional - the name of the user to get, default is current user
+ * @return {{}} Dictionary with details of the current user, default details returned if user not found 
+ */
+function getUserDetails(userName){
+  if(!userName){
+    userName = getUserName();
+  }
+  return (LENDESK_USERS[userName] ? LENDESK_USERS[userName] : LENDESK_USERS["default"]);
+}
