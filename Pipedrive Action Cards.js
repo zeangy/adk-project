@@ -32,7 +32,6 @@ function addPipedriveActivity(e){
     var linkToId = parameters.pipedriveId;
     var date = null;
     var time = null;
-    var duration = null;
     var startDateObj = (formInputs.start_date ? formInputs.start_date.dateTimeInput : null);
     if(startDateObj){
       var startDate = new Date(parseInt(startDateObj.msSinceEpoch));
@@ -42,24 +41,8 @@ function addPipedriveActivity(e){
       if(startDateObj.hasTime){
         time = Utilities.formatDate(startDate, "UTC", "hh:mm");
       }
-      var endDateObj = (formInputs.end_date ? formInputs.end_date.dateTimeInput : null);
-      if(endDateObj){
-        var endDate = new Date(parseInt(endDateObj.msSinceEpoch));
-        if(endDateObj.hasDate){
-          var newEndDate = endDate;
-        }
-        else if(endDateObj.hasTime){
-          var newEndDate = new Date(startDate);
-          newEndDate.setHours(endDate.getHours());
-          newEndDate.setMinutes(endDate.getMinutes());
-        }
-        var difference = newEndDate.getTime() - startDate.getTime();
-        var hours = parseInt(Math.abs(difference) / (1000 * 60 * 60) );
-        var minutes = parseInt(Math.abs(difference) / (1000 * 60) % 60);
-        duration = hours+":"+minutes;
-      }
     }
-    
+    var duration = (formInputs.duration ? formInputs.duration.stringInputs.value.toString() : null);
     var note = (formInputs.note ? formInputs.note.stringInputs.value : "").toString();
     var subject = (formInputs.subject ? formInputs.subject.stringInputs.value : "").toString();
     var createdByName = (formInputs.assignee ? formInputs.assignee.stringInputs.value : null);
@@ -161,22 +144,33 @@ function buildAddPipedriveActivitiesCard(e){
     .setFieldName("subject")
     .setValue(formattedActivityType+" with "+name)
   );
-   
-  addActivitySection.addWidget(CardService.newDateTimePicker()
-    .setTitle("Start Time")
-    .setFieldName("start_date")
-  );
-  addActivitySection.addWidget(CardService.newDateTimePicker()
-    .setTitle("End Time")
-    .setFieldName("end_date")
-  );
-  
+     
   addActivitySection.addWidget(CardService.newTextInput()
     .setMultiline(true)
     .setTitle("Note")
     .setFieldName("note")
   );
   
+  addActivitySection.addWidget(CardService.newDateTimePicker()
+    .setTitle("Due Date")
+    .setFieldName("start_date")
+    .setValueInMsSinceEpoch((new Date()).getTime())
+  );
+  
+  var durationSelection = CardService.newSelectionInput()
+    .setTitle("Duration (HH:MM)")
+    .setFieldName("duration")
+    .setType(CardService.SelectionInputType.DROPDOWN);
+  
+  var durationIncrement = 5;
+  var maxDuration = 4*60;
+
+  for(var i = 1; i <= maxDuration/durationIncrement; i++){
+    var durationItem = formatTime(i*durationIncrement/60);
+    durationSelection.addItem(durationItem, durationItem, (i == 3));
+  }
+  addActivitySection.addWidget(durationSelection);
+
   var assigneeSelection = CardService.newSelectionInput()
     .setTitle("Assignee")
     .setFieldName("assignee")

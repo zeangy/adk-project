@@ -121,3 +121,22 @@ function getUserDetails(userName){
   }
   return (LENDESK_USERS[userName] ? LENDESK_USERS[userName] : LENDESK_USERS["default"]);
 }
+
+/*
+ * Format time as HH:MM
+ *
+ * @param {Float} time The time in hours (e.g. 6:30 would be 6.5)
+ * @return {String} Time in HH:MM format, "" if error
+ */
+function formatTime(time){
+  var formattedTime = "";
+  try{
+    var hours = Math.trunc(time);
+    var minutes = time - hours;
+    minutes = Math.round(minutes * 60);
+    formattedTime = (hours < 10 ? "0"+hours : hours)+":"+(minutes < 10 ? "0"+minutes : minutes);
+  }
+  catch(e){
+  }
+  return formattedTime;
+}
