@@ -24,7 +24,7 @@ function pipedrivePersonSearchSection(){
   
   var searchTextInput = CardService.newTextInput()
      .setFieldName("search_term")
-     .setTitle("Search by name or email").setOnChangeAction(searchAction);
+     .setTitle("Search by name, email, or phone number").setOnChangeAction(searchAction);
   
   section.addWidget(searchTextInput);
   return section;
@@ -97,7 +97,7 @@ function searchPipedrivePersonListSection(response, errorMsg){
       var keyValue = CardService.newKeyValue()
         .setTopLabel("Organization: "+contactOrganizationName)
         .setContent(contactName)
-        .setBottomLabel(contactEmailList.join(", "))
+        .setBottomLabel(contactEmailList.concat(contactPhoneList).join(", "))
         .setOnClickAction(CardService.newAction()
           .setFunctionName('buildPipedrivePersonDetailsCard')
           .setParameters({'pipedriveId':contactId, 'organizationId':organizationId}));
@@ -173,6 +173,9 @@ function createPipedriveAddButton(type, pipedriveId, title, subtitle){
 function getNoteWidgets(personId){
   var widgetList = [];
   var notes = PipedriveAPILibrary.getPersonNotes(personId);
+  if(notes){
+    notes.sort(function(a, b){return new Date(b.add_time) - new Date(a.add_time);});
+  }
   for(var i in notes){
     var currentNote = notes[i];
     var currentWidget = CardService.newKeyValue()
@@ -195,7 +198,12 @@ function getNoteWidgets(personId){
 function getActivityWidgets(personId, excludeList){
   var widgetList = [];
   var activities = PipedriveAPILibrary.getPersonActivities(personId);
-  activities = (activities ? activities.filter(function(x){return (excludeList || []).indexOf(x["type"]) < 0;}) : activities);
+  
+  if(activities){
+    activities = (activities ? activities.filter(function(x){return (excludeList || []).indexOf(x["type"]) < 0;}) : activities);
+    activities.sort(function(a, b){return new Date(b.add_time) - new Date(a.add_time);});
+  }
+  
   for(var i in activities){
     var currentActivity = activities[i];
     var currentWidget = CardService.newKeyValue()
@@ -215,6 +223,9 @@ function getActivityWidgets(personId, excludeList){
  */
 function getDealWidgets(dealDetails){
   var widgetList = [];
+  if(dealDetails){
+    dealDetails.sort(function(a, b){return b.updated - a.updated;});
+  }
   for(var i in dealDetails){
     var currentDeal = dealDetails[i];
     widgetList.push(CardService.newKeyValue()
