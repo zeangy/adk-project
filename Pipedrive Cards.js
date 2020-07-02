@@ -179,10 +179,10 @@ function getNoteWidgets(personId){
   for(var i in notes){
     var currentNote = notes[i];
     var currentWidget = CardService.newKeyValue()
-        .setTopLabel(currentNote.user.name)
-        .setContent((currentNote.content || ""))
-        .setBottomLabel(currentNote.add_time)
-        .setMultiline(true);
+      .setMultiline(true)
+      .setTopLabel(currentNote.user.name+(currentNote.add_time != currentNote.update_time ? " (Updated: "+currentNote.update_time+")" : ""))
+      .setContent((currentNote.content || ""))
+      .setBottomLabel("Added at: "+currentNote.add_time);
     widgetList.push(currentWidget);
   }
   return widgetList;
@@ -200,16 +200,20 @@ function getActivityWidgets(personId, excludeList){
   var activities = PipedriveAPILibrary.getPersonActivities(personId);
   
   if(activities){
-    activities = (activities ? activities.filter(function(x){return (excludeList || []).indexOf(x["type"]) < 0;}) : activities);
+    activities = activities.filter(function(x){return (excludeList || []).indexOf(x["type"]) < 0;});
     activities.sort(function(a, b){return new Date(b.add_time) - new Date(a.add_time);});
   }
   
   for(var i in activities){
     var currentActivity = activities[i];
     var currentWidget = CardService.newKeyValue()
-        .setTopLabel(currentActivity.type)
-        .setContent((currentActivity.note_clean || ""))
-        .setBottomLabel(currentActivity.add_time);
+      //.setSwitch(CardService.newSwitch().setFieldName("task_status").setSelected(currentActivity.done).setControlType(CardService.SwitchControlType.CHECK_BOX))
+      .setTopLabel("Subject: "+(currentActivity.subject || ""))
+      .setContent((currentActivity.note_clean || ""))
+      .setBottomLabel(firstLetterUppercase(currentActivity.type)+" @ "+currentActivity.add_time);
+    if(currentActivity.type != "email"){
+      currentWidget.setMultiline(true);
+    }
     widgetList.push(currentWidget);
   }
   return widgetList;
@@ -223,9 +227,7 @@ function getActivityWidgets(personId, excludeList){
  */
 function getDealWidgets(dealDetails){
   var widgetList = [];
-  if(dealDetails){
-    dealDetails.sort(function(a, b){return b.updated - a.updated;});
-  }
+  
   for(var i in dealDetails){
     var currentDeal = dealDetails[i];
     widgetList.push(CardService.newKeyValue()
