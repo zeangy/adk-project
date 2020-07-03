@@ -178,11 +178,14 @@ function getNoteWidgets(personId){
   }
   for(var i in notes){
     var currentNote = notes[i];
-    var topLabel = "";
-    if(currentNote.add_time != currentNote.update_time){
-      topLabel = "Last updated "+(currentNote.last_update_user_id ? " by "+PipedriveAPILibrary.getUserById(currentNote.last_update_user_id) : "")+" at "+currentNote.update_time;
+    var topLabel = (currentNote.person && currentNote.person.name ? "Contact Note: "+currentNote.person.name : "");
+    if(currentNote.deal && currentNote.deal.title){
+      topLabel = "Deal Note: "+currentNote.deal.title;
     }
     var bottomLabel = "Created by "+(currentNote.user.name.split(" ")[0] || currentNote.user.name || "Unknown")+" at "+currentNote.add_time;
+    if(currentNote.add_time != currentNote.update_time){
+      bottomLabel = bottomLabel+" | Updated "+(currentNote.last_update_user_id ? " by "+PipedriveAPILibrary.getUserById(currentNote.last_update_user_id) : "")+" at "+currentNote.update_time;
+    }
     var currentWidget = CardService.newKeyValue()
       .setMultiline(true)
       .setTopLabel(topLabel)
@@ -240,7 +243,7 @@ function getDealWidgets(dealDetails){
     widgetList.push(CardService.newKeyValue()
       .setContent(currentDeal["title"])
       .setTopLabel(currentDeal["status"].toString())
-      .setBottomLabel("Last Updated: "+currentDeal["updated"].toString())
+      .setBottomLabel("Last updated at "+currentDeal["updated"].toString())
       .setOnClickAction(CardService.newAction()
         .setFunctionName('onApplicationClick')
         .setParameters({'applicationId':currentDeal["lendeskId"], 'applicant_name':currentDeal["title"], 'referral_category': ""}))
@@ -365,10 +368,20 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
     .setTopLabel("Phone Numbers")
     .setContent(contactDetails.phone.map(function(x){return x["value"];}).join("<br>"))
   );
+  var link = "https://script.google.com/a/macros/neighbourhoodholdings.com/s/AKfycbzRm92-feDnnM0C_mfe_dv1EXRVbzpD01iLNtquPsrSPJ5763Y/exec?";
+  link = link+"ef="+title;
+  for(var i in contactDetails.email){
+    link = link+"&ef="+contactDetails.email[i].value;
+  }
+  for(var i in contactDetails.phone){
+    link = link+"&ef="+contactDetails.phone[i].value;
+  }
+  
   var otherInfo = "Years' of Experience: <b>"+(contactDetails.yearsExperience || "")+"</b><br>"+
       "Primary Business: <b>"+(contactDetails.primaryBusiness || "")+"</b><br>"+
       "Tag: <b>"+(contactDetails.tag || "")+"</b><br>"+
-      "Province: <b>"+(contactDetails.province || "")+"</b>";
+      "Province: <b>"+(contactDetails.province || "")+"</b><br>"+
+      "<a href='"+link+"'><b>Search Online</b></a>";
       
   contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
     .setTopLabel("Other Info")
