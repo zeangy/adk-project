@@ -178,11 +178,16 @@ function getNoteWidgets(personId){
   }
   for(var i in notes){
     var currentNote = notes[i];
+    var topLabel = "";
+    if(currentNote.add_time != currentNote.update_time){
+      topLabel = "Last updated "+(currentNote.last_update_user_id ? " by "+PipedriveAPILibrary.getUserById(currentNote.last_update_user_id) : "")+" at "+currentNote.update_time;
+    }
+    var bottomLabel = "Created by "+(currentNote.user.name.split(" ")[0] || currentNote.user.name || "Unknown")+" at "+currentNote.add_time;
     var currentWidget = CardService.newKeyValue()
       .setMultiline(true)
-      .setTopLabel(currentNote.user.name+(currentNote.add_time != currentNote.update_time ? " (Updated: "+currentNote.update_time+")" : ""))
+      .setTopLabel(topLabel)
       .setContent((currentNote.content || ""))
-      .setBottomLabel("Added at: "+currentNote.add_time);
+      .setBottomLabel(bottomLabel);
     widgetList.push(currentWidget);
   }
   return widgetList;
@@ -206,11 +211,13 @@ function getActivityWidgets(personId, excludeList){
   
   for(var i in activities){
     var currentActivity = activities[i];
+    var bottomLabel = firstLetterUppercase(currentActivity.type)+" Assigned to "+PipedriveAPILibrary.getUserById(currentActivity.assigned_to_user_id)+" at "+currentActivity.add_time;
     var currentWidget = CardService.newKeyValue()
+      //.setIcon(ACTIVITY_ICON_MAP[currentActivity.type])
       //.setSwitch(CardService.newSwitch().setFieldName("task_status").setSelected(currentActivity.done).setControlType(CardService.SwitchControlType.CHECK_BOX))
-      .setTopLabel("Subject: "+(currentActivity.subject || ""))
+      .setTopLabel((currentActivity.subject || ""))
       .setContent((currentActivity.note_clean || ""))
-      .setBottomLabel(firstLetterUppercase(currentActivity.type)+" @ "+currentActivity.add_time);
+      .setBottomLabel(bottomLabel);
     if(currentActivity.type != "email"){
       currentWidget.setMultiline(true);
     }
@@ -370,13 +377,13 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   
   contactDetailSection.addWidget(pipedriveActionButtonSet(personId, title, subtitle));
 
-  var notesSection = pipedriveNoteDisplaySection(personId);
+  var notesSection = pipedriveNoteDisplaySection(personId, 10);
   var noteHeader = "Notes: "+contactDetails["notes_count"];
   notesSection.setHeader(noteHeader)
     .setNumUncollapsibleWidgets(2)
     .setCollapsible(true);
   
-  var activitySection = pipedriveActivityDisplaySection(personId, ["email"]);
+  var activitySection = pipedriveActivityDisplaySection(personId, [], 10);
   var activityHeader = "Activities: "+contactDetails["done_activities_count"]+" Done / "+contactDetails["undone_activities_count"]+" Pending";
   activitySection.setHeader(activityHeader)
     .setNumUncollapsibleWidgets(2)
