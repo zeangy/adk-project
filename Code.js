@@ -39,7 +39,7 @@ function buildAddOn(e) {
   
   catch(err){
   }
-  return buildApplicationSearchCard();
+  return buildGeneralSearchCard();
 }
 
 /*
@@ -54,6 +54,8 @@ function buildMainMenuCards(){
   cards.push(buildDisplayMyDealsCard());
   cards.push(buildApplicationSearchCard());
   cards.push(buildDisplayPipelineCard());
+  cards.push(buildGeneralSearchCard());
+  cards.push(buildPipedrivePersonSearchCard());
 
   return cards;
 }
@@ -262,27 +264,79 @@ function displayPipelineSection(){
   return section;
 }
 
+/*
+ * Create card with text field for searching Lendesk and Pipedrive
+ *
+ * @return {Card}
+ */
+function buildGeneralSearchCard(){
+   var card = CardService.newCardBuilder()
+  .setHeader(CardService.newCardHeader()
+    .setTitle("Search Applications and Contacts")
+    .setImageUrl(IMAGES.SEARCH))
+  .addSection(generalSearchSection());
+   
+   return card.build();
+}
+
+/*
+ * Create card with text field for searching Lendesk only
+ *
+ * @return {Card}
+ */
 function buildApplicationSearchCard(){
    var card = CardService.newCardBuilder()
     .setHeader(CardService.newCardHeader()
       .setTitle("Search Lendesk Applications")
-      .setImageUrl(IMAGES.SEARCH))
+      .setImageUrl(IMAGES.LENDESK))
     .addSection(applicationSearchSection());
    
    return card.build();
 }
 
-function applicationSearchSection(){
- 
+/*
+ * Create a section with text field for searching Lendesk, Pipedrive, or both
+ *
+ * @param {Boolean} excludeLendesk Optional - whether to exclude Lendesk search
+ * @param {Boolean} excludePipedrive Optional - whether to exclude Pipedrive search
+ * @return {Section}
+ */
+function generalSearchSection(excludeLendesk, excludePipedrive){
+  var titleList = [];
+  var functionName = "generalSearchCard";
+  var includeLendesk = !excludeLendesk;
+  var includePipedrive = !excludePipedrive;
+  
+  if(includeLendesk){
+    titleList.push("Search Lendesk by name or address");
+    if(excludePipedrive){
+      functionName = "applicationSearchCard";
+    }
+  }
+  if(includePipedrive){
+    titleList.push("Search Pipedrive by name, email, or phone");
+    if(excludeLendesk){
+      functionName = "pipedrivePersonSearchCard";
+    }
+  }
   var section = CardService.newCardSection();
-  var searchAction = CardService.newAction().setFunctionName('applicationSearchCard');
+  var searchAction = CardService.newAction().setFunctionName(functionName);
   
   var searchTextInput = CardService.newTextInput()
      .setFieldName("search_term")
-     .setTitle("Search by name or address").setOnChangeAction(searchAction);
+     .setTitle(titleList.join(" and ")).setOnChangeAction(searchAction);
   
   section.addWidget(searchTextInput);
   return section;
+}
+
+/*
+ * Create a section with text field for searching Lendesk
+ *
+ * @return {Section}
+ */
+function applicationSearchSection(){
+  return generalSearchSection(false, true);
 }
 
 /*
@@ -337,16 +391,18 @@ function searchListSection(response, errorMsg, showIcon){
  * Creates a card with search results for Lendesk, Pipedrive, or both
  *
  * @param {Event Object} e Event object passed from call to create card, must include form input search_term
- * @param {Boolean} includeLendesk Whether to include Lendesk search results
- * @param {Boolean} includePipedrive Whether to include Pipedrive search results
+ * @param {Boolean} excludeLendesk Optional - Whether to exclude Lendesk search results
+ * @param {Boolean} excludePipedrive Optional - Whether to exclude Pipedrive search results
  * @return {Card} A card with the search results
  */
-function generalSearchCard(e, includeLendesk, includePipedrive){
+function generalSearchCard(e, excludeLendesk, excludePipedrive){
     
   var searchTerm = e.formInput["search_term"];
   var card = CardService.newCardBuilder(); 
   var subtitleList = [];
   var responseCount = 0;
+  var includeLendesk = !excludeLendesk;
+  var includePipedrive = !excludePipedrive;
   
   if(includeLendesk){
     var response = LendeskAPILibrary.searchApplications(searchTerm);
@@ -369,15 +425,20 @@ function generalSearchCard(e, includeLendesk, includePipedrive){
   
   var header = CardService.newCardHeader().setTitle("Search Term: "+searchTerm).setSubtitle(subtitleList.join(" and ")+" found");
 
-  card.addSection(applicationSearchSection().setHeader("New Search"));
+  card.addSection(generalSearchSection(excludeLendesk, excludePipedrive).setHeader("New Search"));
   
   header.setImageUrl((responseCount < 1 ? IMAGES.FROWN : IMAGES.SMILE));
   card.setHeader(header);
   return card.build();
 }
 
+/*
+ * Creates a card with search results for Lendesk
+ *
+ * @return {Card} A card with the search results
+ */
 function applicationSearchCard(e) {
-  return generalSearchCard(e, true, true);
+  return generalSearchCard(e, false, true);
 }
 
 function onApplicationClick(e){

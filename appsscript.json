@@ -25,7 +25,7 @@
         "secondaryColor": "#4285F4"
       },
       "homepageTrigger": {
-        "runFunction": "buildApplicationSearchCard"
+        "runFunction": "buildGeneralSearchCard"
       },
       "universalActions": [{
         "label": "Main Menu",
@@ -33,9 +33,6 @@
       }, {
         "label": "My Active Deals",
         "runFunction": "returnToMyDeals"
-      }, {
-        "label": "Search Applications",
-        "runFunction": "returnToSearch"
       }, {
         "label": "Pipeline Applications List",
         "runFunction": "returnToPipeline"
@@ -48,6 +45,12 @@
       }, {
         "label": "Expiring Offers",
         "runFunction": "getExpiredCommitmentApplications"
+      }, {
+        "label": "General Search",
+        "runFunction": "buildGeneralSearchCard"
+      }, {
+        "label": "Application Search",
+        "runFunction": "returnToSearch"
       }, {
         "label": "Broker Search",
         "runFunction": "buildPipedrivePersonSearchCard"
@@ -63,7 +66,7 @@
     },
     "drive": {
       "homepageTrigger": {
-        "runFunction": "buildApplicationSearchCard"
+        "runFunction": "buildGeneralSearchCard"
       }
     }
   }

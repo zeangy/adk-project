@@ -16,18 +16,10 @@ function buildPipedrivePersonSearchCard(){
 /*
  * Creates a section with a search field, submit by pressing enter
  *
- * @return {Section} New card section with the search field.
+ * @return {Section} New card section with the search field
  */
 function pipedrivePersonSearchSection(){
-  var section = CardService.newCardSection();
-  var searchAction = CardService.newAction().setFunctionName('pipedrivePersonSearchCard');
-  
-  var searchTextInput = CardService.newTextInput()
-     .setFieldName("search_term")
-     .setTitle("Search by name, email, or phone number").setOnChangeAction(searchAction);
-  
-  section.addWidget(searchTextInput);
-  return section;
+  return generalSearchSection(true, false);
 }
 
 /*
