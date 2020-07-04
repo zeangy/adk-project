@@ -41,19 +41,15 @@ function pipedrivePersonSearchSection(){
 function pipedrivePersonSearchCard(e) {
   var formInputs = e.commonEventObject.formInputs;
   var searchTerm = (formInputs  ? formInputs.search_term.stringInputs.value : "--");
-  var response = PipedriveAPILibrary.searchPersons(searchTerm);
-  var errorMessage = "<i>No contacts found matching <b>"+searchTerm+"</b></i>";
-  if(response.error){
-    errorMessage = "<i>"+response.error.message+"</i>";
-    errorMessage = errorMessage.replace("ServerError [ERR_INVALID_INPUT]: ", "");
-    response = [];
-  }
+  
   var card = CardService.newCardBuilder(); 
-  var header = CardService.newCardHeader().setTitle("Search Term: "+searchTerm).setSubtitle(response.length+" contacts found");
-  var iconUrl = (response.length < 1 ? IMAGES.FROWN : IMAGES.SMILE);
+  var sectionDetail = pipedrivePersonSearchSectionDetail(searchTerm);
+  var section = sectionDetail.section;
+  var numMatches = sectionDetail.count;
   
-  var section = searchPipedrivePersonListSection(response, errorMessage);
-  
+  var header = CardService.newCardHeader().setTitle("Search Term: "+searchTerm).setSubtitle(numMatches+" contacts found");
+  var iconUrl = (numMatches < 1 ? IMAGES.FROWN : IMAGES.SMILE);
+    
   header.setImageUrl(iconUrl);
   card.setHeader(header);
   card.addSection(section);
@@ -63,19 +59,58 @@ function pipedrivePersonSearchCard(e) {
 }
 
 /*
- * Creates a section with a list of keyvalues for each search result in response
- * If no results in response error message is displayed
+ * Creates an object containing:
+ * section: Section containing all keyvalues of matching results or error message widget if not found
+ * count: The number of results matching the serach term
  *
- * @param {JSON Object} response Search result from Pipedrive API call.
- * @param {String} errorMsg The message to display if response does not contain any results
- * @return {Section} New card section with the results listed as key values.
+ * @param {String} searchTerm The term to search Pipedrive persons by
+ * @param {Boolean} showIcon Whether to display the Pipedrive Icon in each widget
+ * @return {{section : Section, count : Number}} An object containing the section and number of matches found
  */
-function searchPipedrivePersonListSection(response, errorMsg){
-  
+function pipedrivePersonSearchSectionDetail(searchTerm, showIcon){
+
   var section = CardService.newCardSection();
+  var widgets = [];
+  var iconUrl = IMAGES.PIPEDRIVE;
   
+  try{
+    widgets = getSearchPipedrivePersonWidgets(searchTerm, false);
+    for(var i in widgets){
+      if(showIcon){
+        widgets[i].setIconUrl(iconUrl);
+      }
+      section.addWidget(widgets[i]);
+    }
+  }
+  catch(errorMessage){
+    section.addWidget(CardService.newTextParagraph().setText(errorMessage));
+  }
+  var response = {
+    "section" : section,
+    "count" : widgets.length
+  }
+  return response;
+}
+
+/*
+ * Creates a list of keyvalues for each search result in response
+ * If no results in response an error message is thrown
+ *
+ * @param {String} searchTerm The term to search using a Pipedrive API call.
+ * @return {[Widget]} A list of the widgets with the search results
+ */
+function getSearchPipedrivePersonWidgets(searchTerm){
+  
+  var widgets = [];
+  var response = PipedriveAPILibrary.searchPersons((searchTerm ? searchTerm : "--"));
+  
+  if(response.error){
+    var errorMessage = "<i>"+response.error.message+"</i>";
+    errorMessage = errorMessage.replace("ServerError [ERR_INVALID_INPUT]: ", "");
+    throw errorMessage;
+  }
   if(response.length < 1) {
-    section.addWidget(CardService.newTextParagraph().setText(errorMsg));
+    throw "<i>No Pipedrive contacts found matching <b>"+searchTerm+"</b></i>";
   }
   else {
     for(var i in response){
@@ -101,10 +136,10 @@ function searchPipedrivePersonListSection(response, errorMsg){
         .setOnClickAction(CardService.newAction()
           .setFunctionName('buildPipedrivePersonDetailsCard')
           .setParameters({'pipedriveId':contactId, 'organizationId':organizationId}));
-      section.addWidget(keyValue);
+      widgets.push(keyValue);
     }  
   }
-  return section;
+  return widgets;
 }
 
 /*

@@ -294,10 +294,12 @@ function applicationSearchSection(){
  *
  * @param {JSON Object} response Search result from lendesk API call.
  * @param {String} errorMsg The message to display if response does not contain any results
+ * @param {Boolean} showIcon Optional - whether to display the Lendesk Icon in each widget
  * @returns {Section} New card section with the results listed as key values.
  */
-function searchListSection(response, errorMsg){
+function searchListSection(response, errorMsg, showIcon){
   
+  var iconUrl = IMAGES.LENDESK;
   var section = CardService.newCardSection();
   
   if(response.length < 1) {
@@ -325,6 +327,9 @@ function searchListSection(response, errorMsg){
       else{
         keyValue.setBottomLabel(response[i].id);
       }
+      if(showIcon){
+        keyValue.setIconUrl(iconUrl);
+      }
       section.addWidget(keyValue);
     }  
   }
@@ -335,18 +340,23 @@ function applicationSearchCard(e) {
   
   var searchTerm = e.formInput["search_term"];
   var response = LendeskAPILibrary.searchApplications(searchTerm);
-  
   var card = CardService.newCardBuilder(); 
-  var header = CardService.newCardHeader().setTitle("Search Term: "+searchTerm).setSubtitle(response.length+" applications found");
-  var iconUrl = (response.length < 1 ? IMAGES.FROWN : IMAGES.SMILE);
+
+  var section = searchListSection(response, "<i>No Lendesk applications found matching <b>"+searchTerm+"</b></i>", true);
   
-  var section = searchListSection(response, "<i>No applications found matching <b>"+searchTerm+"</b></i>");
-  
-  header.setImageUrl(iconUrl);
-  card.setHeader(header);
   card.addSection(section);
+  
+  var pipedriveSectionDetail = pipedrivePersonSearchSectionDetail(searchTerm, true);
+  var pipedriveSection = pipedriveSectionDetail.section;
+  var numPipedriveMatches = pipedriveSectionDetail.count;
+  card.addSection(pipedriveSection);
+  
   card.addSection(applicationSearchSection().setHeader("New Search"));
   
+  var header = CardService.newCardHeader().setTitle("Search Term: "+searchTerm).setSubtitle(response.length+" applications and "+numPipedriveMatches+" contacts found");
+  var iconUrl = (response.length < 1 ? IMAGES.FROWN : IMAGES.SMILE);
+  header.setImageUrl(iconUrl);
+  card.setHeader(header);
   return card.build();
 }
 

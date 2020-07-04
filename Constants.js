@@ -113,7 +113,8 @@ var IMAGES = {
   "UPDATE" : "http://files.conconi.ca/loud_howard.jpg", 
   "SEARCH" : "http://joshwcomeau.github.io/RequestKittensDocs/public/assets/images/kitten_icon.png", 
   "GOOGLE_SHEET" : "https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_spreadsheet_x16.png", 
-  "PIPEDRIVE" : "https://cdn.us-east-1.pipedriveassets.com/chrome-extension-assets/icons/favicon.ico"
+  "PIPEDRIVE" : "https://cdn.us-east-1.pipedriveassets.com/chrome-extension-assets/icons/favicon.ico",
+  "LENDESK" : "http://files.conconi.ca/lendesk_logo.png"
 };
 
 var PIPEDRIVE_TYPE_MAP = {
