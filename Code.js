@@ -281,10 +281,7 @@ function applicationSearchSection(){
      .setFieldName("search_term")
      .setTitle("Search by name or address").setOnChangeAction(searchAction);
   
-  //var searchButton = CardService.newTextButton().setText('Submit').setOnClickAction(searchAction);
-
   section.addWidget(searchTextInput);
-  //section.addWidget(CardService.newButtonSet().addButton(searchButton));
   return section;
 }
 
@@ -336,28 +333,51 @@ function searchListSection(response, errorMsg, showIcon){
   return section;
 }
 
-function applicationSearchCard(e) {
-  
+/*
+ * Creates a card with search results for Lendesk, Pipedrive, or both
+ *
+ * @param {Event Object} e Event object passed from call to create card, must include form input search_term
+ * @param {Boolean} includeLendesk Whether to include Lendesk search results
+ * @param {Boolean} includePipedrive Whether to include Pipedrive search results
+ * @return {Card} A card with the search results
+ */
+function generalSearchCard(e, includeLendesk, includePipedrive){
+    
   var searchTerm = e.formInput["search_term"];
-  var response = LendeskAPILibrary.searchApplications(searchTerm);
   var card = CardService.newCardBuilder(); 
+  var subtitleList = [];
+  var responseCount = 0;
+  
+  if(includeLendesk){
+    var response = LendeskAPILibrary.searchApplications(searchTerm);
+    var section = searchListSection(response, "<i>No Lendesk applications found matching <b>"+searchTerm+"</b></i>", includePipedrive);
+    card.addSection(section);
+    
+    var numLendeskMatches = response.length;
+    subtitleList.push(numLendeskMatches+" applications");
+    responseCount += numLendeskMatches;
+  }
+  if(includePipedrive){
+    var pipedriveSectionDetail = pipedrivePersonSearchSectionDetail(searchTerm, includeLendesk);
+    var pipedriveSection = pipedriveSectionDetail.section;
+    card.addSection(pipedriveSection);
+    
+    var numPipedriveMatches = pipedriveSectionDetail.count;
+    subtitleList.push(numPipedriveMatches+" contacts");
+    responseCount += numPipedriveMatches;
+  }
+  
+  var header = CardService.newCardHeader().setTitle("Search Term: "+searchTerm).setSubtitle(subtitleList.join(" and ")+" found");
 
-  var section = searchListSection(response, "<i>No Lendesk applications found matching <b>"+searchTerm+"</b></i>", true);
-  
-  card.addSection(section);
-  
-  var pipedriveSectionDetail = pipedrivePersonSearchSectionDetail(searchTerm, true);
-  var pipedriveSection = pipedriveSectionDetail.section;
-  var numPipedriveMatches = pipedriveSectionDetail.count;
-  card.addSection(pipedriveSection);
-  
   card.addSection(applicationSearchSection().setHeader("New Search"));
   
-  var header = CardService.newCardHeader().setTitle("Search Term: "+searchTerm).setSubtitle(response.length+" applications and "+numPipedriveMatches+" contacts found");
-  var iconUrl = (response.length < 1 ? IMAGES.FROWN : IMAGES.SMILE);
-  header.setImageUrl(iconUrl);
+  header.setImageUrl((responseCount < 1 ? IMAGES.FROWN : IMAGES.SMILE));
   card.setHeader(header);
   return card.build();
+}
+
+function applicationSearchCard(e) {
+  return generalSearchCard(e, true, true);
 }
 
 function onApplicationClick(e){
