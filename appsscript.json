@@ -58,11 +58,9 @@
       "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/", "https://neighbourhoodholdings-originations.pipedrive.com/"]
     },
     "gmail": {
-      "contextualTriggers": [{
-        "unconditional": {
-        },
-        "onTriggerFunction": "buildAddOn"
-      }]
+      "homepageTrigger": {
+        "runFunction": "buildGeneralSearchCard"
+      }
     },
     "drive": {
       "homepageTrigger": {
