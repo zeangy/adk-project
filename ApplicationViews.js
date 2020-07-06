@@ -59,8 +59,8 @@ function getExpiredCommitmentApplications(e){
      LENDESK_STATUS_ARRAY["1. Quote"],
      LENDESK_STATUS_ARRAY["2. Sent Commitment"]
   ];
-  var formDealLead = e.formInput.dealLead;
-  var dealLead = (formDealLead ? formDealLead : getUserName());
+
+  var dealLead = (e && e.formInput && e.formInput.dealLead ?  e.formInput.dealLead : getUserName());
   var dealLeadList = [dealLead];
   
   var response = LendeskAPILibrary.searchApplicationsByStatusAndLeader(statusList, dealLeadList);

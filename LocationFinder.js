@@ -1,7 +1,7 @@
 function locationSearchCard() {
-  var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader()
-    .setTitle("Location Search")
-  );
+  var card = CardService.newCardBuilder();
+  card.setHeader(CardService.newCardHeader().setTitle("Location Search").setImageUrl(IMAGES.MAP));
+  
   var section = CardService.newCardSection();
   
   section.addWidget(
@@ -17,7 +17,7 @@ function locationSearchCard() {
   )  
   card.addSection(section);
   
-  return [card.build()];
+  return card.build();
 }
 
 function locationSearchResult(e){

@@ -114,7 +114,8 @@ var IMAGES = {
   "SEARCH" : "http://joshwcomeau.github.io/RequestKittensDocs/public/assets/images/kitten_icon.png", 
   "GOOGLE_SHEET" : "https://ssl.gstatic.com/docs/doclist/images/mediatype/icon_1_spreadsheet_x16.png", 
   "PIPEDRIVE" : "https://cdn.us-east-1.pipedriveassets.com/chrome-extension-assets/icons/favicon.ico",
-  "LENDESK" : "http://files.conconi.ca/lendesk_logo.png"
+  "LENDESK" : "http://files.conconi.ca/lendesk_logo.png",
+  "MAP" : "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Google_Maps_icon.svg/1200px-Google_Maps_icon.svg.png"
 };
 
 var PIPEDRIVE_TYPE_MAP = {

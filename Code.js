@@ -52,11 +52,13 @@ function buildMainMenuCards(){
   var cards = [];
   
   cards.push(buildDisplayMyDealsCard());
-  cards.push(buildApplicationSearchCard());
+  cards.push(getExpiredCommitmentApplications());
   cards.push(buildDisplayPipelineCard());
+  cards.push(locationSearchCard());
   cards.push(buildGeneralSearchCard());
+  cards.push(buildApplicationSearchCard());
   cards.push(buildPipedrivePersonSearchCard());
-
+  
   return cards;
 }
 
