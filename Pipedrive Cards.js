@@ -216,9 +216,10 @@ function getNoteWidgets(personId){
     var currentWidget = CardService.newKeyValue()
       .setMultiline(true)
       .setTopLabel(topLabel)
-      .setContent((currentNote.content || ""))
+      .setContent((currentNote.content ? currentNote.content.replace(/<a href="(.*?)"/g, "<i>($1)</i> <a") : "")) // remove external links, since
       .setBottomLabel(bottomLabel);
     widgetList.push(currentWidget);
+    Logger.log(currentNote.content);
   }
   return widgetList;
 }
