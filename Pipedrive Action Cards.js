@@ -88,41 +88,13 @@ function buildAddContactCard(e){
   }
   section.addWidget(lastName);
   
-  var keys = Object.keys(parameters);
-  var emailCount = 1;
-  var emailWidgets = [];
-  var phoneCount = 1;
-  var phoneWidgets = [];
-  for(var i in keys){
-    
-    if(keys[i].indexOf("email") >= 0){
-      emailWidgets.push(CardService.newTextInput()
-          .setFieldName(keys[i])
-          .setTitle("Email "+emailCount)
-          .setValue(parameters[keys[i]])
-      );
-      emailCount ++;
-    }
-    if(keys[i].indexOf("phone") >= 0){
-      phoneWidgets.push(CardService.newTextInput()
-          .setFieldName(keys[i])
-          .setTitle("Phone "+phoneCount)
-          .setValue(parameters[keys[i]])
-      );
-      phoneCount ++;
-    }
-  }
-  emailWidgets.push(CardService.newTextInput()
-    .setFieldName("email"+emailCount)
-    .setTitle("Email "+emailCount));
+  var emailWidgets = getTextWidgetsByParameters(parameters, "email");
     
   for (var i in emailWidgets){
     section.addWidget(emailWidgets[i]);
   }
   
-  phoneWidgets.push(CardService.newTextInput()
-    .setFieldName("phone"+phoneCount)
-    .setTitle("Phone "+phoneCount));
+  var phoneWidgets = getTextWidgetsByParameters(parameters, "phone");
   for (var i in phoneWidgets){
     section.addWidget(phoneWidgets[i]);
   }
@@ -131,33 +103,55 @@ function buildAddContactCard(e){
     "Broker", 
     "Legal"
   ];
-  var typeSelection = CardService.newSelectionInput()
-    .setFieldName("type")
-    .setTitle("Type")
-    .setType(CardService.SelectionInputType.DROPDOWN);
-  
-  for(var i in typeOptions){
-    typeSelection.addItem(typeOptions[i], typeOptions[i], (parameters.type ? parameters.type == typeOptions[i] : false));
-  }
+  var typeSelection = getSelectionWidgetByParameters(parameters, "type", typeOptions, CardService.SelectionInputType.DROPDOWN);
   section.addWidget(typeSelection);
   
   var tagOptions = [
     "Preferred Broker", 
     "Mailchimp"
   ];
-  var tagSelection = CardService.newSelectionInput()
-    .setFieldName("tags")
-    .setTitle("Tags")
-    .setType(CardService.SelectionInputType.CHECK_BOX);
-  
-  for(var i in tagOptions){
-    tagSelection.addItem(tagOptions[i], tagOptions[i], (parameters.tags ? parameters.tags.indexof(tagOptions[i]) >= 0 : false));
-  }
+  var tagSelection = getSelectionWidgetByParameters(parameters, "tags", tagOptions, CardService.SelectionInputType.CHECK_BOX);
   section.addWidget(tagSelection);
+  
+  var provinceOptions = [
+    "ON", 
+    "BC"
+  ];
+  var provinceSelection = getSelectionWidgetByParameters(parameters, "province", provinceOptions, CardService.SelectionInputType.CHECK_BOX);
+  section.addWidget(provinceSelection);
+  
+  var submitButton = CardService.newTextButton()
+    .setDisabled(true)
+    .setText("Submit")
+    .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard"));
+  section.addWidget(submitButton);
   
   card.addSection(section);
   return card.build();
+}
+
+/* 
+ * Create a selection input widget with selected values if given in parameters
+ *
+ * @param {{}} parameters The parameters with current values, {} if none
+ * @param {String} keyWord The keyword to match in parameters to include as current values
+ * @param {[String]} options The selection options to display
+ * @param {String} selectionType Optional - The type of selection input, dropdown menu if not given
+ * @return {Widget} A selection input widgets to display, with current values selected if provided
+ */
+function getSelectionWidgetByParameters(parameters, keyWord, options, selectionType){
   
+  if(!selectionType){
+    selectionType = CardService.SelectionInputType.DROPDOWN;
+  }
+  var widget = CardService.newSelectionInput()
+    .setFieldName(keyWord)
+    .setTitle(firstLetterUppercase(keyWord))
+    .setType(selectionType);
+  for(var i in options){
+    widget.addItem(options[i], options[i], (parameters[keyWord] ? parameters[keyWord].indexOf(options[i]) >= 0 : false));
+  }
+  return widget;
 }
 
 /* 
