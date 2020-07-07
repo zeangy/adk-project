@@ -84,7 +84,7 @@ function buildAddContactCard(e){
     .setFieldName("last_name")
     .setTitle("Last Name");
   if(parameters.last_name){
-    firstName.setValue(parameters.last_name);
+    lastName.setValue(parameters.last_name);
   }
   section.addWidget(lastName);
   
@@ -99,25 +99,15 @@ function buildAddContactCard(e){
     section.addWidget(phoneWidgets[i]);
   }
   
-  var typeOptions = [
-    "Broker", 
-    "Legal"
-  ];
-  var typeSelection = getSelectionWidgetByParameters(parameters, "type", typeOptions, CardService.SelectionInputType.DROPDOWN);
+  var customFieldOptions = PipedriveAPILibrary.getPersonCustomFieldOptionsByName();
+  
+  var typeSelection = getSelectionWidgetByParameters(parameters.type, customFieldOptions["Type"], CardService.SelectionInputType.DROPDOWN);
   section.addWidget(typeSelection);
   
-  var tagOptions = [
-    "Preferred Broker", 
-    "Mailchimp"
-  ];
-  var tagSelection = getSelectionWidgetByParameters(parameters, "tags", tagOptions, CardService.SelectionInputType.CHECK_BOX);
+  var tagSelection = getSelectionWidgetByParameters(parameters.tags, customFieldOptions["Tag"], CardService.SelectionInputType.CHECK_BOX);
   section.addWidget(tagSelection);
   
-  var provinceOptions = [
-    "ON", 
-    "BC"
-  ];
-  var provinceSelection = getSelectionWidgetByParameters(parameters, "province", provinceOptions, CardService.SelectionInputType.CHECK_BOX);
+  var provinceSelection = getSelectionWidgetByParameters(parameters.province, customFieldOptions["Province"], CardService.SelectionInputType.CHECK_BOX);
   section.addWidget(provinceSelection);
   
   var submitButton = CardService.newTextButton()
@@ -139,17 +129,18 @@ function buildAddContactCard(e){
  * @param {String} selectionType Optional - The type of selection input, dropdown menu if not given
  * @return {Widget} A selection input widgets to display, with current values selected if provided
  */
-function getSelectionWidgetByParameters(parameters, keyWord, options, selectionType){
+function getSelectionWidgetByParameters(currentValue, customFieldDic, selectionType){
+  var options = customFieldDic["options"];
   
   if(!selectionType){
     selectionType = CardService.SelectionInputType.DROPDOWN;
   }
   var widget = CardService.newSelectionInput()
-    .setFieldName(keyWord)
-    .setTitle(firstLetterUppercase(keyWord))
+    .setFieldName(customFieldDic["key"])
+    .setTitle(customFieldDic["name"])
     .setType(selectionType);
   for(var i in options){
-    widget.addItem(options[i], options[i], (parameters[keyWord] ? parameters[keyWord].indexOf(options[i]) >= 0 : false));
+    widget.addItem(options[i]["label"], options[i]["id"], (currentValue ? currentValue.indexOf(options[i]["label"]) >= 0 : false));
   }
   return widget;
 }
