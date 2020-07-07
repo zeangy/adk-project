@@ -83,8 +83,8 @@ function buildAddContactCard(e){
   var lastName = CardService.newTextInput()
     .setFieldName("last_name")
     .setTitle("Last Name");
-  if(parameters.first_name){
-    firstName.setValue(parameters.lastName);
+  if(parameters.last_name){
+    firstName.setValue(parameters.last_name);
   }
   section.addWidget(lastName);
   

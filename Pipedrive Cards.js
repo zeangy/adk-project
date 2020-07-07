@@ -378,8 +378,28 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
       .setImageUrl(IMAGES.PIPEDRIVE);
   var card = CardService.newCardBuilder().setHeader(header);
   
+  var updateContactParameters = {
+    "first_name" : (contactDetails.first_name || ""),
+    "last_name" : (contactDetails.last_name || ""),
+    "type" : (contactDetails.type || ""),
+    "tags" : (contactDetails.tag || ""),
+    "province" : (contactDetails.province || "")
+  }
+  for(var i in contactDetails.email){
+    updateContactParameters["email"+i] = contactDetails.email[i].value;
+  }
+  for(var i in contactDetails.phone){
+    updateContactParameters["phone"+i] = contactDetails.phone[i].value;
+  }
+  var updateContactButton = CardService.newTextButton()
+    .setText("Edit")
+    .setOnClickAction(CardService.newAction()
+      .setFunctionName("buildAddContactCard")
+      .setParameters(updateContactParameters)
+    );
   var nameKeyValue = CardService.newKeyValue().setMultiline(true)
     .setTopLabel("Contact Type: "+(contactDetails.type || "Not Set"))
+    .setButton(updateContactButton)
     .setContent(formatLink(contactDetails.name)).setOpenLink(CardService.newOpenLink()
       .setUrl("https://neighbourhoodholdings-originations.pipedrive.com/person/"+personId)
     );
