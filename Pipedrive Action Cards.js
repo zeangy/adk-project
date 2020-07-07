@@ -1,5 +1,5 @@
 /*
- * Upload note to Pipedrive contact
+ * Create a note in Pipedrive
  *
  * @param {EventObject} e
  * @returns {Card} Contact card
@@ -22,6 +22,12 @@ function addPipedriveNote(e){
   return buildPipedrivePersonDetailsCard(e, message, false);
 }
 
+/*
+ * Create an activity in Pipedrive
+ *
+ * @param {EventObject} e
+ * @returns {Card} Contact card
+ */
 function addPipedriveActivity(e){
   var parameters = e.commonEventObject.parameters;
   var formInputs = e.commonEventObject.formInputs;
@@ -55,6 +61,132 @@ function addPipedriveActivity(e){
   
   return buildPipedrivePersonDetailsCard(e, message, false);
   
+}
+
+function buildAddContactCard(e){
+  var parameters = (e.commonEventObject.parameters || {});
+  
+  var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader()
+    .setTitle((parameters.length > 0 ? "Update" : "Create")+" Contact")
+    .setImageUrl(IMAGES.PIPEDRIVE)
+  );
+  var section = CardService.newCardSection();
+  
+  var firstName =  CardService.newTextInput()
+    .setFieldName("first_name")
+    .setTitle("First Name");
+  if(parameters.first_name){
+    firstName.setValue(parameters.first_name);
+  }
+  section.addWidget(firstName);
+  
+  var lastName = CardService.newTextInput()
+    .setFieldName("last_name")
+    .setTitle("Last Name");
+  if(parameters.first_name){
+    firstName.setValue(parameters.lastName);
+  }
+  section.addWidget(lastName);
+  
+  var keys = Object.keys(parameters);
+  var emailCount = 1;
+  var emailWidgets = [];
+  var phoneCount = 1;
+  var phoneWidgets = [];
+  for(var i in keys){
+    
+    if(keys[i].indexOf("email") >= 0){
+      emailWidgets.push(CardService.newTextInput()
+          .setFieldName(keys[i])
+          .setTitle("Email "+emailCount)
+          .setValue(parameters[keys[i]])
+      );
+      emailCount ++;
+    }
+    if(keys[i].indexOf("phone") >= 0){
+      phoneWidgets.push(CardService.newTextInput()
+          .setFieldName(keys[i])
+          .setTitle("Phone "+phoneCount)
+          .setValue(parameters[keys[i]])
+      );
+      phoneCount ++;
+    }
+  }
+  emailWidgets.push(CardService.newTextInput()
+    .setFieldName("email"+emailCount)
+    .setTitle("Email "+emailCount));
+    
+  for (var i in emailWidgets){
+    section.addWidget(emailWidgets[i]);
+  }
+  
+  phoneWidgets.push(CardService.newTextInput()
+    .setFieldName("phone"+phoneCount)
+    .setTitle("Phone "+phoneCount));
+  for (var i in phoneWidgets){
+    section.addWidget(phoneWidgets[i]);
+  }
+  
+  var typeOptions = [
+    "Broker", 
+    "Legal"
+  ];
+  var typeSelection = CardService.newSelectionInput()
+    .setFieldName("type")
+    .setTitle("Type")
+    .setType(CardService.SelectionInputType.DROPDOWN);
+  
+  for(var i in typeOptions){
+    typeSelection.addItem(typeOptions[i], typeOptions[i], (parameters.type ? parameters.type == typeOptions[i] : false));
+  }
+  section.addWidget(typeSelection);
+  
+  var tagOptions = [
+    "Preferred Broker", 
+    "Mailchimp"
+  ];
+  var tagSelection = CardService.newSelectionInput()
+    .setFieldName("tags")
+    .setTitle("Tags")
+    .setType(CardService.SelectionInputType.CHECK_BOX);
+  
+  for(var i in tagOptions){
+    tagSelection.addItem(tagOptions[i], tagOptions[i], (parameters.tags ? parameters.tags.indexof(tagOptions[i]) >= 0 : false));
+  }
+  section.addWidget(tagSelection);
+  
+  card.addSection(section);
+  return card.build();
+  
+}
+
+/* 
+ * Populate a list of widgets for phone or email address text inputs with values if given in parameters
+ *
+ * @param {{}} parameters The parameters with current values, {} if none
+ * @param {String} keyWord The keyword to match in parameters to include as current values
+ * @return {[Widget]} A list of widgets to display, with current values and one spot for new entries
+ */
+function getTextWidgetsByParameters(parameters, keyWord){
+  var keys = Object.keys(parameters);
+  var count = 1;
+  var widgets = [];
+  for(var i in keys){
+    if(keys[i].indexOf(keyWord) >= 0){
+      widgets.push(CardService.newTextInput()
+        .setFieldName(keys[i])
+        .setTitle(firstLetterUppercase(keyWord)+" "+count)
+        .setValue(parameters[keys[i]])
+      );
+      count ++;
+    }
+  }
+  // 1 empty for new additions
+  widgets.push(CardService.newTextInput()
+    .setFieldName(keyWord+count)
+    .setTitle(firstLetterUppercase(keyWord)+" "+count)
+  );
+  return widgets;
 }
 
 /*
