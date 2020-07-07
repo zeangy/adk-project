@@ -229,25 +229,6 @@ function buildDisplayPipelineCard(){
   return card.build();
 }
 
-function buildDisplayMyDealsCard(){
-
-  var leader = getUserName(); 
-  
-  var response = LendeskAPILibrary.searchActiveApplicationsByLeader(leader);
-  
-  var header = CardService.newCardHeader()
-    .setTitle("Active Deals Created By "+leader)
-    .setSubtitle(response.length+" Deals in Pipeline");
-  
-  var section = searchListSection(response, "No applications found");
-  
-  var card = CardService.newCardBuilder()
-    .setHeader(header)
-    .addSection(section);
-  
-  return card.build();
-}
-
 function displayPipelineSection(){
   
   var pipelineSheet = SpreadsheetApp.openById(PIPELINE.SHEET_ID).getSheetByName(PIPELINE.SHEET_NAME);
@@ -264,6 +245,40 @@ function displayPipelineSection(){
     }
   }
   return section;
+}
+
+/*
+ * Display active deals for a specific user
+ *
+ * @param {Event Object} e Optional - Event Object containing dealLead forminput
+ * @return {Card} A card with a list of applications for a specific user and a dropdown menu to filter by a different user
+ */
+function buildDisplayMyDealsCard(e){
+  var leader = (e ? "*" : getUserName());
+  if(e){
+    try{
+      leader = e.commonEventObject.formInputs.dealLead.stringInputs.value;
+    }
+    catch(err){
+    }
+  }
+  var response = LendeskAPILibrary.searchActiveApplicationsByLeader(leader);
+  
+  var header = CardService.newCardHeader()
+    .setTitle("Active Deals Created By "+leader)
+    .setSubtitle(response.length+" Deals in Pipeline");
+    
+  header.setImageUrl((response.length > 0 ? IMAGES.SMILE : IMAGES.FROWN));
+  
+  var card = CardService.newCardBuilder().setHeader(header);
+  
+  var selectLeaderSection = filterDealLeadSection("buildDisplayMyDealsCard", leader);
+  card.addSection(selectLeaderSection);
+  
+  var showListSection = searchListSection(response, "<i>No applications found</i>");
+  card.addSection(showListSection);
+  
+  return (e ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build());
 }
 
 /*

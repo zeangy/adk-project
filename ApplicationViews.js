@@ -111,12 +111,26 @@ function getExpiredCommitmentApplications(e){
     }
   }
   
+  var section = filterDealLeadSection("getExpiredCommitmentApplications", dealLead); 
+    
+  return filteredApplicationCard(expiredList, "Expiring Offers", section);
+}
+
+/*
+ * Create section containing dropdown menu for filtering by deal lead
+ * 
+ * @param {String} functionName The name of the function to call when a new selection is made
+ * @param {String} dealLead The currently selected deal lead
+ * @return {Section} A section containing the selection input
+ */
+function filterDealLeadSection(functionName, dealLead){
   var section = CardService.newCardSection();
+  
   var selectionInput = CardService.newSelectionInput()
     .setType(CardService.SelectionInputType.DROPDOWN)
     .setFieldName("dealLead")
     .setTitle("Filter By Deal Lead")
-    .setOnChangeAction(CardService.newAction().setFunctionName("reload").setLoadIndicator(CardService.LoadIndicator.SPINNER));
+    .setOnChangeAction(CardService.newAction().setFunctionName(functionName).setLoadIndicator(CardService.LoadIndicator.SPINNER));
   
   selectionInput.addItem("All", "*", (dealLead == "*"));
   for(var i in LENDESK_USERS){
@@ -124,19 +138,10 @@ function getExpiredCommitmentApplications(e){
     if(currentUser.team == "underwriting"){
       selectionInput.addItem(currentUser.name, currentUser.name, (dealLead == currentUser.name));
     }
-  }  
-  
+  }
   section.addWidget(selectionInput);
-    
-  return filteredApplicationCard(expiredList, "Expiring Offers", section);
-}
-
-function prepEmails(){
-
-}
-
-function reload(e){
-  return getExpiredCommitmentApplications(e);
+  
+  return section;  
 }
 
 /** 

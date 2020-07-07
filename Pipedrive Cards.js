@@ -386,6 +386,9 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   if(!contactDetails.type || contactDetails.type == "Broker"){
     nameKeyValue.setBottomLabel(formatPipedriveClosingStats(dealInfo));
   }
+  if(contactDetails.tag && contactDetails.tag.indexOf("Preferred") >= 0){
+    nameKeyValue.setIcon(CardService.Icon.STAR);
+  }
   contactDetailSection.addWidget(nameKeyValue);
   contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
     .setTopLabel("Email Addresses")
