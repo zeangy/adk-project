@@ -378,14 +378,15 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
       .setSubtitle(subtitle)
       .setImageUrl(IMAGES.PIPEDRIVE);
   var card = CardService.newCardBuilder().setHeader(header);
-  
+
   var updateContactParameters = {
     "first_name" : (contactDetails.first_name || ""),
     "last_name" : (contactDetails.last_name || ""),
     "type" : (contactDetails.type || ""),
     "tags" : (contactDetails.tag || ""),
-    "province" : (contactDetails.province || "")
-  }
+    "province" : (contactDetails.province || ""),
+    "pipedriveId" : personId
+  };
   for(var i in contactDetails.email){
     updateContactParameters["email"+i] = contactDetails.email[i].value;
   }

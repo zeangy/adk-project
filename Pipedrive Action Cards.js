@@ -63,6 +63,12 @@ function addPipedriveActivity(e){
   
 }
 
+/*
+ * Create card to update exising contact or add a new contact in Pipedrive
+ *
+ * @param {Event Object} e Optional
+ * @return {Card}
+ */
 function buildAddContactCard(e){
   var parameters = (e.commonEventObject.parameters || {});
   
@@ -111,21 +117,50 @@ function buildAddContactCard(e){
   section.addWidget(provinceSelection);
   
   var submitButton = CardService.newTextButton()
-    .setDisabled(true)
     .setText("Submit")
-    .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard"));
+    .setOnClickAction(CardService.newAction()
+      .setFunctionName("addPipedriveContact")
+      .setParameters(parameters));
   section.addWidget(submitButton);
   
   card.addSection(section);
-  return card.build();
+  
+  return card.build(); //(formInput ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build());
+}
+
+function addPipedriveContact(e){
+  var formInput = (e.commonEventObject.formInputs || {});
+  var parameters = (e.commonEventObject.parameters || {});
+  var message = " Contact!";
+  // update
+  if(parameters.pipedriveId){
+    message = "Updated"+message;
+  }
+  // create
+  else {
+    e.commonEventObject.parameters = {};
+    //e.commonEventObject.parameters["pipedriveId"] = "1";
+    message = "Created"+message;
+  }
+  
+  var actionResponse = CardService.newActionResponseBuilder();
+  if(e.commonEventObject.parameters["pipedriveId"]){
+    actionResponse.setNavigation(CardService.newNavigation()
+      .updateCard(buildPipedrivePersonDetailsCard(e)))
+      .setNotification(CardService.newNotification().setText(message));
+  }
+  else {
+    actionResponse.setNavigation(CardService.newNavigation().popCard())
+      .setNotification(CardService.newNotification().setText("Contact Creation Failed"));
+  }
+  return actionResponse.build();
 }
 
 /* 
  * Create a selection input widget with selected values if given in parameters
  *
- * @param {{}} parameters The parameters with current values, {} if none
- * @param {String} keyWord The keyword to match in parameters to include as current values
- * @param {[String]} options The selection options to display
+ * @param {String} currentValue The current values selected
+ * @param {{}} customFieldDic The custom field data from Pipedrive for that field
  * @param {String} selectionType Optional - The type of selection input, dropdown menu if not given
  * @return {Widget} A selection input widgets to display, with current values selected if provided
  */
