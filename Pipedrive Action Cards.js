@@ -129,9 +129,32 @@ function buildAddContactCard(e){
 }
 
 function addPipedriveContact(e){
-  var formInput = (e.commonEventObject.formInputs || {});
   var parameters = (e.commonEventObject.parameters || {});
+  
+  var formInput = (e.commonEventObject.formInputs || {});
+  var parsedFormInput = {
+    "email" : [],
+    "phone" : []
+  };
+  for(var i in formInput){
+    var currentValue = formInput[i].stringInputs.value.join(",");
+    if(i.indexOf("email") >= 0){
+      parsedFormInput["email"].push(currentValue);
+    }
+    else if(i.indexOf("phone") >= 0){
+      parsedFormInput["phone"].push(currentValue);
+    }
+    else{
+      parsedFormInput[i] = currentValue;
+    }
+  }
+  parsedFormInput["name"] = parsedFormInput["first_name"]+" "+parsedFormInput["last_name"];
+  parsedFormInput["email"] = parsedFormInput["email"][0];
+  parsedFormInput["phone"] = parsedFormInput["phone"][0];
   var message = " Contact!";
+  
+  var response = PipedriveAPILibrary.updatePersonFromData(parsedFormInput, "30042");
+  
   // update
   if(parameters.pipedriveId){
     message = "Updated"+message;
@@ -139,14 +162,17 @@ function addPipedriveContact(e){
   // create
   else {
     e.commonEventObject.parameters = {};
-    //e.commonEventObject.parameters["pipedriveId"] = "1";
+    var response = PipedriveAPILibrary.createPersonFromData(parsedFormInput);
+    e.commonEventObject.parameters["pipedriveId"] = response.data.id.toString();
+    //e.commonEventObject.parameters["pipedriveId"] = "30042"; // for testing
     message = "Created"+message;
   }
+   //message = JSON.stringify(parsedFormInput); // for testing
   
   var actionResponse = CardService.newActionResponseBuilder();
   if(e.commonEventObject.parameters["pipedriveId"]){
     actionResponse.setNavigation(CardService.newNavigation()
-      .updateCard(buildPipedrivePersonDetailsCard(e)))
+      .updateCard(buildPipedrivePersonDetailsCard(e, message)))
       .setNotification(CardService.newNotification().setText(message));
   }
   else {
@@ -175,7 +201,7 @@ function getSelectionWidgetByParameters(currentValue, customFieldDic, selectionT
     .setTitle(customFieldDic["name"])
     .setType(selectionType);
   for(var i in options){
-    widget.addItem(options[i]["label"], options[i]["id"], (currentValue ? currentValue.indexOf(options[i]["label"]) >= 0 : false));
+    widget.addItem(options[i]["label"], options[i]["id"].toString(), (currentValue ? currentValue.indexOf(options[i]["label"]) >= 0 : false));
   }
   return widget;
 }
