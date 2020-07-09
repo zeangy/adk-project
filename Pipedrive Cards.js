@@ -380,8 +380,7 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   var card = CardService.newCardBuilder().setHeader(header);
 
   var updateContactParameters = {
-    "first_name" : (contactDetails.first_name || ""),
-    "last_name" : (contactDetails.last_name || ""),
+    "name" : (contactDetails.name || ""),
     "type" : (contactDetails.type || ""),
     "tags" : (contactDetails.tag || ""),
     "province" : (contactDetails.province || ""),

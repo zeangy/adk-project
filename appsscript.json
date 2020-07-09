@@ -4,7 +4,7 @@
     "libraries": [{
       "userSymbol": "PipedriveAPILibrary",
       "libraryId": "1RYwLwy2DopT0FXSKz1GqcJFDrNhxWv3P_TZYUuYaOay_dkjU0p4oVBjr",
-      "version": "10",
+      "version": "11",
       "developmentMode": true
     }, {
       "userSymbol": "LendeskAPILibrary",
@@ -55,8 +55,8 @@
         "label": "Broker Search",
         "runFunction": "buildPipedrivePersonSearchCard"
       }, {
-        "label" : "Create Contact",
-        "runFunction" : "buildAddContactCard"
+        "label": "Create Contact",
+        "runFunction": "buildAddContactCard"
       }],
       "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/", "https://neighbourhoodholdings-originations.pipedrive.com/"]
     },

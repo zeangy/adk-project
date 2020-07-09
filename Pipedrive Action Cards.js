@@ -78,21 +78,13 @@ function buildAddContactCard(e){
   );
   var section = CardService.newCardSection();
   
-  var firstName =  CardService.newTextInput()
-    .setFieldName("first_name")
-    .setTitle("First Name");
-  if(parameters.first_name){
-    firstName.setValue(parameters.first_name);
+  var name =  CardService.newTextInput()
+    .setFieldName("name")
+    .setTitle("Full Name");
+  if(parameters.name){
+    name.setValue(parameters.name);
   }
-  section.addWidget(firstName);
-  
-  var lastName = CardService.newTextInput()
-    .setFieldName("last_name")
-    .setTitle("Last Name");
-  if(parameters.last_name){
-    lastName.setValue(parameters.last_name);
-  }
-  section.addWidget(lastName);
+  section.addWidget(name);
   
   var emailWidgets = getTextWidgetsByParameters(parameters, "email");
     
@@ -139,35 +131,30 @@ function addPipedriveContact(e){
   for(var i in formInput){
     var currentValue = formInput[i].stringInputs.value.join(",");
     if(i.indexOf("email") >= 0){
-      parsedFormInput["email"].push(currentValue);
+      parsedFormInput["email"].push({"value" : currentValue});
     }
     else if(i.indexOf("phone") >= 0){
-      parsedFormInput["phone"].push(currentValue);
+      parsedFormInput["phone"].push({"value" : currentValue});
     }
     else{
       parsedFormInput[i] = currentValue;
     }
   }
-  parsedFormInput["name"] = parsedFormInput["first_name"]+" "+parsedFormInput["last_name"];
-  parsedFormInput["email"] = parsedFormInput["email"][0];
-  parsedFormInput["phone"] = parsedFormInput["phone"][0];
+
   var message = " Contact!";
-  
-  var response = PipedriveAPILibrary.updatePersonFromData(parsedFormInput, "30042");
   
   // update
   if(parameters.pipedriveId){
+    var response = PipedriveAPILibrary.updatePersonFromData(parsedFormInput, parameters.pipedriveId);
     message = "Updated"+message;
   }
   // create
   else {
-    e.commonEventObject.parameters = {};
     var response = PipedriveAPILibrary.createPersonFromData(parsedFormInput);
+     e.commonEventObject.parameters = {};
     e.commonEventObject.parameters["pipedriveId"] = response.data.id.toString();
-    //e.commonEventObject.parameters["pipedriveId"] = "30042"; // for testing
     message = "Created"+message;
-  }
-   //message = JSON.stringify(parsedFormInput); // for testing
+  }  
   
   var actionResponse = CardService.newActionResponseBuilder();
   if(e.commonEventObject.parameters["pipedriveId"]){
