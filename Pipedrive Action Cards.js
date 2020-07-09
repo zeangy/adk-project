@@ -71,6 +71,23 @@ function addPipedriveActivity(e){
  */
 function buildAddContactCard(e){
   var parameters = (e.commonEventObject.parameters || {});
+  var formInput = (e.commonEventObject.formInputs || {});
+   /*
+   var updateContactParameters = {
+    "type" : (contactDetails.type || ""),
+    "tags" : (contactDetails.tag || ""),
+    "province" : (contactDetails.province || ""),
+    "pipedriveId" : personId
+  };
+  */
+  
+  if(parameters.reload){
+    for(var i in formInput){
+      if(formInput[i]){
+        parameters[i] = formInput[i].stringInputs.value.join(",");
+      }
+    }
+  }
   
   var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader()
     .setTitle((parameters.length > 0 ? "Update" : "Create")+" Contact")
@@ -99,14 +116,27 @@ function buildAddContactCard(e){
   
   var customFieldOptions = PipedriveAPILibrary.getPersonCustomFieldOptionsByName();
   
-  var typeSelection = getSelectionWidgetByParameters(parameters.type, customFieldOptions["Type"], CardService.SelectionInputType.DROPDOWN);
-  section.addWidget(typeSelection);
+  var selectionInputs = {
+    "type" : {
+      "dic" : customFieldOptions["Type"],
+      "selectionType" : CardService.SelectionInputType.DROPDOWN
+     },
+    "tag" : {
+      "dic" : customFieldOptions["Tag"],
+      "selectionType" : CardService.SelectionInputType.CHECK_BOX
+     },
+    "province" : {
+      "dic" : customFieldOptions["Province"],
+      "selectionType" : CardService.SelectionInputType.CHECK_BOX
+     }
+  };
   
-  var tagSelection = getSelectionWidgetByParameters(parameters.tags, customFieldOptions["Tag"], CardService.SelectionInputType.CHECK_BOX);
-  section.addWidget(tagSelection);
-  
-  var provinceSelection = getSelectionWidgetByParameters(parameters.province, customFieldOptions["Province"], CardService.SelectionInputType.CHECK_BOX);
-  section.addWidget(provinceSelection);
+  for(var i in selectionInputs){
+    var customFieldDic = selectionInputs[i]["dic"];
+    var currentValue = (parameters[customFieldDic["key"]] || parameters[i]);
+    var selectionWidget = getSelectionWidgetByParameters(currentValue, customFieldDic, selectionInputs[i]["selectionType"]);
+    section.addWidget(selectionWidget);
+  }
   
   var submitButton = CardService.newTextButton()
     .setText("Submit")
@@ -188,7 +218,7 @@ function getSelectionWidgetByParameters(currentValue, customFieldDic, selectionT
     .setTitle(customFieldDic["name"])
     .setType(selectionType);
   for(var i in options){
-    widget.addItem(options[i]["label"], options[i]["id"].toString(), (currentValue ? currentValue.indexOf(options[i]["label"]) >= 0 : false));
+    widget.addItem(options[i]["label"], options[i]["id"].toString(), (currentValue ? (currentValue.indexOf(options[i]["label"]) >= 0 || currentValue.indexOf(options[i]["id"]) >= 0) : false));
   }
   return widget;
 }
@@ -203,21 +233,35 @@ function getSelectionWidgetByParameters(currentValue, customFieldDic, selectionT
 function getTextWidgetsByParameters(parameters, keyWord){
   var keys = Object.keys(parameters);
   var count = 1;
-  var widgets = [];
+  var widgetNumbers = [];
+
   for(var i in keys){
     if(keys[i].indexOf(keyWord) >= 0){
-      widgets.push(CardService.newTextInput()
+      var index = parseInt(keys[i].replace(keyWord, ""));
+      var widget = CardService.newTextInput()
         .setFieldName(keys[i])
-        .setTitle(firstLetterUppercase(keyWord)+" "+count)
-        .setValue(parameters[keys[i]])
-      );
+        .setTitle(firstLetterUppercase(keyWord)+" "+(+index+1))
+        .setValue(parameters[keys[i]]);
+      widgetNumbers.push({
+        "widget" : widget,
+        "index" : index
+      });
       count ++;
     }
   }
+  var widgets = widgetNumbers.sort(function(a, b){return a.index - b.index;}).map(function(x){return x.widget;});
+  
   // 1 empty for new additions
   widgets.push(CardService.newTextInput()
-    .setFieldName(keyWord+count)
+    .setFieldName(keyWord+(count-1))
     .setTitle(firstLetterUppercase(keyWord)+" "+count)
+  );
+  
+  // Option to add more
+  parameters.reload = "true";
+  widgets.push(CardService.newTextButton()
+    .setText("Add "+keyWord)
+    .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(parameters))
   );
   return widgets;
 }

@@ -386,7 +386,7 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   var updateContactParameters = {
     "name" : (contactDetails.name || ""),
     "type" : (contactDetails.type || ""),
-    "tags" : (contactDetails.tag || ""),
+    "tag" : (contactDetails.tag || ""),
     "province" : (contactDetails.province || ""),
     "pipedriveId" : personId
   };
