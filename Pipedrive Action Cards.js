@@ -72,14 +72,6 @@ function addPipedriveActivity(e){
 function buildAddContactCard(e){
   var parameters = (e.commonEventObject.parameters || {});
   var formInput = (e.commonEventObject.formInputs || {});
-   /*
-   var updateContactParameters = {
-    "type" : (contactDetails.type || ""),
-    "tags" : (contactDetails.tag || ""),
-    "province" : (contactDetails.province || ""),
-    "pipedriveId" : personId
-  };
-  */
   
   if(parameters.reload){
     for(var i in formInput){
@@ -104,11 +96,10 @@ function buildAddContactCard(e){
   section.addWidget(name);
   
   var emailWidgets = getTextWidgetsByParameters(parameters, "email");
-    
   for (var i in emailWidgets){
     section.addWidget(emailWidgets[i]);
   }
-  
+
   var phoneWidgets = getTextWidgetsByParameters(parameters, "phone");
   for (var i in phoneWidgets){
     section.addWidget(phoneWidgets[i]);
@@ -147,7 +138,7 @@ function buildAddContactCard(e){
   
   card.addSection(section);
   
-  return card.build(); //(formInput ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build());
+  return (parameters.reload ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build()); 
 }
 
 function addPipedriveContact(e){
@@ -180,6 +171,7 @@ function addPipedriveContact(e){
   }
   // create
   else {
+    parsedFormInput["owner_id"] = PipedriveAPILibrary.USER_MAP_BY_NAME[getUserName()];
     var response = PipedriveAPILibrary.createPersonFromData(parsedFormInput);
     e.commonEventObject.parameters = {};
     e.commonEventObject.parameters["pipedriveId"] = response.data.id.toString();
@@ -231,37 +223,52 @@ function getSelectionWidgetByParameters(currentValue, customFieldDic, selectionT
  * @return {[Widget]} A list of widgets to display, with current values and one spot for new entries
  */
 function getTextWidgetsByParameters(parameters, keyWord){
-  var keys = Object.keys(parameters);
-  var count = 1;
-  var widgetNumbers = [];
 
+  var keys = Object.keys(parameters);
+  var widgetDic = {};
+  var widgets = [];
+  var count = 1;
+  
+  // get widgets with current values
   for(var i in keys){
-    if(keys[i].indexOf(keyWord) >= 0){
+    if(keys[i].indexOf(keyWord) >= 0 ){
       var index = parseInt(keys[i].replace(keyWord, ""));
       var widget = CardService.newTextInput()
         .setFieldName(keys[i])
         .setTitle(firstLetterUppercase(keyWord)+" "+(+index+1))
         .setValue(parameters[keys[i]]);
-      widgetNumbers.push({
-        "widget" : widget,
-        "index" : index
-      });
+      widgetDic[index] = widget;
       count ++;
     }
   }
-  var widgets = widgetNumbers.sort(function(a, b){return a.index - b.index;}).map(function(x){return x.widget;});
   
-  // 1 empty for new additions
-  widgets.push(CardService.newTextInput()
-    .setFieldName(keyWord+(count-1))
-    .setTitle(firstLetterUppercase(keyWord)+" "+count)
-  );
+  // don't use full keyword because otherwise code above will think it should be displayed
+  var paramName = "displayNum"+keyWord.slice(0, 1);
   
+  // at least 1 empty for new additions
+  var numAdd = Math.max(parseInt(parameters[paramName] || "1"), count);
+  for (var i = 0; i < numAdd; i++){
+    if(widgetDic[i]){
+      // widget with current value
+      widgets.push(widgetDic[i]);
+    }
+    else{
+      // empty widget
+      widgets.push(CardService.newTextInput()
+        .setFieldName(keyWord+i)
+        .setTitle(firstLetterUppercase(keyWord)+" "+(i+1))
+      );
+    }
+  }
+  
+  // create copy so it doesn't effect other input
+  var updatedParameters = Object.assign({}, parameters);
   // Option to add more
-  parameters.reload = "true";
+  updatedParameters.reload = "true";
+  updatedParameters[paramName] = (numAdd+1).toString();
   widgets.push(CardService.newTextButton()
-    .setText("Add "+keyWord)
-    .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(parameters))
+    .setText("+ Add one more "+keyWord)
+    .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(updatedParameters))
   );
   return widgets;
 }
