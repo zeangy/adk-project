@@ -76,6 +76,10 @@ function pipedrivePersonSearchSectionDetail(searchTerm, showIcon){
   }
   catch(errorMessage){
     section.addWidget(CardService.newTextParagraph().setText(errorMessage));
+    // add button to create new contact
+    section.addWidget(CardService.newTextButton()
+      .setText("Add New Pipedrive Contact")
+      .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters({"name":searchTerm.toString()})));
   }
   var response = {
     "section" : section,

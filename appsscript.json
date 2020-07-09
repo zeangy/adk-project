@@ -4,7 +4,7 @@
     "libraries": [{
       "userSymbol": "PipedriveAPILibrary",
       "libraryId": "1RYwLwy2DopT0FXSKz1GqcJFDrNhxWv3P_TZYUuYaOay_dkjU0p4oVBjr",
-      "version": "11",
+      "version": "13",
       "developmentMode": true
     }, {
       "userSymbol": "LendeskAPILibrary",

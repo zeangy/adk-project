@@ -151,7 +151,7 @@ function addPipedriveContact(e){
   // create
   else {
     var response = PipedriveAPILibrary.createPersonFromData(parsedFormInput);
-     e.commonEventObject.parameters = {};
+    e.commonEventObject.parameters = {};
     e.commonEventObject.parameters["pipedriveId"] = response.data.id.toString();
     message = "Created"+message;
   }  
