@@ -171,7 +171,10 @@ function addPipedriveContact(e){
   }
   // create
   else {
-    parsedFormInput["owner_id"] = PipedriveAPILibrary.USER_MAP_BY_NAME[getUserName()];
+    // if pipedrive user, then assign the contact to them
+    if(PipedriveAPILibrary.USER_MAP_BY_NAME[getUserName()]){
+      parsedFormInput["owner_id"] = PipedriveAPILibrary.USER_MAP_BY_NAME[getUserName()];
+    }
     var response = PipedriveAPILibrary.createPersonFromData(parsedFormInput);
     e.commonEventObject.parameters = {};
     e.commonEventObject.parameters["pipedriveId"] = response.data.id.toString();
