@@ -45,7 +45,7 @@ function addPipedriveActivity(e){
         date = Utilities.formatDate(msSinceEpochToDate(startDateObj.msSinceEpoch), "UTC", "YYYY-MM-dd");
       }
       if(startDateObj.hasTime){
-        time = Utilities.formatDate(startDate, "UTC", "hh:mm");
+        time = Utilities.formatDate(startDate, "UTC", "HH:mm");
       }
     }
     var duration = (formInputs.duration ? formInputs.duration.stringInputs.value.toString() : null);
