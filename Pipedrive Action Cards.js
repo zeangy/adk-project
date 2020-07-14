@@ -82,7 +82,7 @@ function buildAddContactCard(e){
   }
   
   var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader()
-    .setTitle((parameters.length > 0 ? "Update" : "Create")+" Contact")
+    .setTitle((Object.keys(parameters).length > 0 ? "Update" : "Create")+" Contact")
     .setImageUrl(IMAGES.PIPEDRIVE)
   );
   var section = CardService.newCardSection();
@@ -121,6 +121,9 @@ function buildAddContactCard(e){
       "selectionType" : CardService.SelectionInputType.CHECK_BOX
      }
   };
+  var extraInfoSection = CardService.newCardSection();
+  extraInfoSection.setCollapsible(true)
+    .setNumUncollapsibleWidgets(1);
   
   for(var i in selectionInputs){
     var customFieldDic = selectionInputs[i]["dic"];
@@ -129,6 +132,7 @@ function buildAddContactCard(e){
     section.addWidget(selectionWidget);
   }
   
+  var submitSection = CardService.newCardSection();
   var submitButton = CardService.newTextButton()
     .setText("Submit")
     .setOnClickAction(CardService.newAction()
@@ -137,6 +141,8 @@ function buildAddContactCard(e){
   section.addWidget(submitButton);
   
   card.addSection(section);
+  //card.addSection(extraInfoSection);
+  //card.addSection(submitSection);
   
   return (parameters.reload ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build()); 
 }

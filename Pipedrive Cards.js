@@ -66,7 +66,7 @@ function pipedrivePersonSearchSectionDetail(searchTerm, showIcon){
   var iconUrl = IMAGES.PIPEDRIVE;
   
   try{
-    widgets = getSearchPipedrivePersonWidgets(searchTerm, false);
+    widgets = getSearchPipedrivePersonWidgets(searchTerm);
     for(var i in widgets){
       if(showIcon){
         widgets[i].setIconUrl(iconUrl);
@@ -436,6 +436,7 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
       "Primary Business: <b>"+(contactDetails.primaryBusiness || "")+"</b><br>"+
       "Tag: <b>"+(contactDetails.tag || "")+"</b><br>"+
       "Province: <b>"+(contactDetails.province || "")+"</b><br>"+
+      "Contact in Lendesk: <b>"+(contactDetails.lendeskId ? "Yes" : "No")+"</b><br>"+
       "<a href='"+link+"'><b>Search Online</b></a>";
       
   contactDetailSection.addWidget(CardService.newKeyValue().setMultiline(true)
@@ -462,12 +463,50 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   dealSection.setHeader(dealHeader)
     .setNumUncollapsibleWidgets(2)
     .setCollapsible(true);
-
+  
   card.addSection(contactDetailSection);
   card.addSection(notesSection);
   card.addSection(activitySection);
   card.addSection(dealSection);
-    
+  
+  var mergeResultSection = CardService.newCardSection();
+  var matches = [];
+  var keys = Object.keys(updateContactParameters);
+  var search = keys.filter(function(x){return ((x.indexOf("name") >= 0 || x.indexOf("email") >= 0 || x.indexOf("phone") >= 0) && updateContactParameters[x].length > 2);});
+  for(var i in search){
+    var response = PipedriveAPILibrary.searchPersons(updateContactParameters[search[i]]);
+    for(var j in response){
+      var personMatch = response[j].item;
+      if(personMatch.id != personId){
+        matches.push(personMatch);
+      }
+    }
+  }
+
+  if(matches.length > 0){
+    for(var i in matches){
+      var currPerson = matches[i];
+
+      var widget = CardService.newKeyValue()
+        .setTopLabel("Organization: "+(currPerson.organization && currPerson.organization.name ? currPerson.organization.name : "NOT SET"))
+        .setBottomLabel(currPerson.emails.concat(currPerson.phones).join(", "))
+        .setContent(currPerson.name)
+        .setButton(CardService.newTextButton().setText("Merge").setOpenLink(CardService.newOpenLink().setUrl("https://neighbourhoodholdings-originations.pipedrive.com/person/"+currPerson.id))
+      );
+      // probably has lendesk id
+      if(currPerson.custom_fields.filter(function(x){return x.length > 35;}).length >= 0){
+        widget.setIconUrl(IMAGES.LENDESK);
+      }
+      mergeResultSection.addWidget(widget);
+      
+    }
+  }
+  else{
+    mergeResultSection.addWidget(CardService.newTextParagraph().setText("<i>No suspected duplicates</i>"));
+  }
+  mergeResultSection.setHeader("Possible Duplicates ("+matches.length+")");
+  card.addSection(mergeResultSection);
+  
   if(actionResponseBoolean){
     var actionResponse = CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation()
