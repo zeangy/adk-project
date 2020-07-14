@@ -118,6 +118,12 @@ function getSearchPipedrivePersonWidgets(searchTerm){
   return widgets;
 }
 
+/*
+ * Create a key value for a broker search result
+ *
+ * @param {{}} currentContact The item returned by the searching persons in Pipedrive
+ * @return {KeyValue} A key value widget for that contact, with on click function to open broker page
+ */
 function getPersonKeyValue(currentContact){
   var contactName = currentContact.name;
   var contactPhoneList = currentContact.phones;
@@ -140,42 +146,65 @@ function getPersonKeyValue(currentContact){
     .setOnClickAction(CardService.newAction()
       .setFunctionName('buildPipedrivePersonDetailsCard')
       .setParameters({'pipedriveId':contactId, 'organizationId':organizationId}));
+  
   return keyValue;
 }
 
+/*
+ * Search for duplicate pipedrive persons and create a section to display them as keyvalues with merge button
+ *
+ * @param {{}} updateContactParameters The details of the current contact page, including name, email# and phone#
+ * @return {Section} The possible duplicates
+ */
 function getMergeSection(updateContactParameters){
 
   var mergeResultSection = CardService.newCardSection();
-  var matchCount = 0;
   var keys = Object.keys(updateContactParameters);
   var search = keys.filter(function(x){return ((x.indexOf("name") >= 0 || x.indexOf("email") >= 0 || x.indexOf("phone") >= 0) && updateContactParameters[x].length > 2);});
+  var matchDetails = {};
   
   for(var i in search){
     var response = PipedriveAPILibrary.searchPersons(updateContactParameters[search[i]]);
     for(var j in response){
       var currentContact = response[j].item;
+
       if(currentContact.id != updateContactParameters.pipedriveId){
-        var widget = getPersonKeyValue(currentContact);
-      
-        widget.setButton(CardService.newTextButton()
-          .setText("Merge")
-            .setOpenLink(CardService.newOpenLink()
-              .setUrl("https://neighbourhoodholdings-originations.pipedrive.com/person/"+currentContact.id)));
-        
-        // probably has lendesk id
-        if(currentContact.custom_fields.filter(function(x){return x.length > 35;}).length > 0){
-          widget.setIconUrl(IMAGES.LENDESK);
+        var match = [updateContactParameters[search[i]]];
+        if(matchDetails[currentContact.id]){
+          matchDetails[currentContact.id]["match"] = matchDetails[currentContact.id]["match"].concat(match);
         }
-        mergeResultSection.addWidget(widget);
-        matchCount ++;
+        else{
+          var widget = getPersonKeyValue(currentContact);
+        
+          widget.setButton(CardService.newTextButton()
+            .setText("Merge")
+              .setOpenLink(CardService.newOpenLink()
+                .setUrl("https://neighbourhoodholdings-originations.pipedrive.com/person/"+currentContact.id)));
+          
+          // probably has lendesk id
+          if(currentContact.custom_fields.filter(function(x){return x.length > 35;}).length > 0){
+            widget.setIconUrl(IMAGES.LENDESK);
+          }
+          matchDetails[currentContact.id] = {
+            "match" : match,
+            "widget" : widget
+          };
+        }
       }
     }
   }
   
+  for(var i in matchDetails){
+    var currentWidget = matchDetails[i]["widget"];
+    currentWidget.setBottomLabel("Match: "+matchDetails[i]["match"].join(","));
+    mergeResultSection.addWidget(currentWidget);
+  }
+  
+  var matchCount = Object.keys(matchDetails).length;
   if(matchCount <= 0){
     mergeResultSection.addWidget(CardService.newTextParagraph().setText("<i>No suspected duplicates</i>"));
   }
-  mergeResultSection.setHeader("Possible Duplicates ("+matchCount+")");
+  mergeResultSection.setHeader("Possible Duplicates: "+matchCount);
   return mergeResultSection;
 }
 
