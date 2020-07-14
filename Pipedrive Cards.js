@@ -491,10 +491,13 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
         .setTopLabel("Organization: "+(currPerson.organization && currPerson.organization.name ? currPerson.organization.name : "NOT SET"))
         .setBottomLabel(currPerson.emails.concat(currPerson.phones).join(", "))
         .setContent(currPerson.name)
+        .setOnClickAction(CardService.newAction()
+          .setFunctionName('buildPipedrivePersonDetailsCard')
+          .setParameters({'pipedriveId':currPerson.id.toString(), 'organizationId':(currPerson.organization && currPerson.organization.id ? currPerson.organization.id.toString() : "")}))
         .setButton(CardService.newTextButton().setText("Merge").setOpenLink(CardService.newOpenLink().setUrl("https://neighbourhoodholdings-originations.pipedrive.com/person/"+currPerson.id))
       );
       // probably has lendesk id
-      if(currPerson.custom_fields.filter(function(x){return x.length > 35;}).length >= 0){
+      if(currPerson.custom_fields.filter(function(x){return x.length > 35;}).length > 0){
         widget.setIconUrl(IMAGES.LENDESK);
       }
       mergeResultSection.addWidget(widget);
