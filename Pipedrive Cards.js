@@ -175,11 +175,18 @@ function getMergeSection(updateContactParameters){
         }
         else{
           var widget = getPersonKeyValue(currentContact);
-        
+          var mergeParameters = {
+            "mergeWithId" : updateContactParameters.pipedriveId,
+            "mergeWithName" : updateContactParameters.name,
+            "ownerId" : updateContactParameters.ownerId,
+            "deleteId" : currentContact.id.toString(),
+            "deleteName" : currentContact.name
+          };
           widget.setButton(CardService.newTextButton()
             .setText("Merge")
-              .setOpenLink(CardService.newOpenLink()
-                .setUrl("https://neighbourhoodholdings-originations.pipedrive.com/person/"+currentContact.id)));
+              .setOnClickAction(CardService.newAction()
+                .setFunctionName("mergePersonsCard")
+                .setParameters(mergeParameters)));
           
           // probably has lendesk id
           if(currentContact.custom_fields.filter(function(x){return x.length > 35;}).length > 0){
@@ -196,7 +203,7 @@ function getMergeSection(updateContactParameters){
   
   for(var i in matchDetails){
     var currentWidget = matchDetails[i]["widget"];
-    currentWidget.setBottomLabel("Match: "+matchDetails[i]["match"].join(","));
+    currentWidget.setBottomLabel("Matches ("+matchDetails[i]["match"].length+"): "+matchDetails[i]["match"].join(", "));
     mergeResultSection.addWidget(currentWidget);
   }
   
@@ -458,7 +465,8 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
     "type" : (contactDetails.type || ""),
     "tag" : (contactDetails.tag || ""),
     "province" : (contactDetails.province || ""),
-    "pipedriveId" : personId
+    "pipedriveId" : personId,
+    "ownerId" : (contactDetails.owner_id && contactDetails.owner_id.id ? contactDetails.owner_id.id.toString() : "")
   };
   for(var i in contactDetails.email){
     updateContactParameters["email"+i] = contactDetails.email[i].value;

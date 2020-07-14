@@ -225,6 +225,27 @@ function getSelectionWidgetByParameters(currentValue, customFieldDic, selectionT
 }
 
 /* 
+ * Create a selection input widget with selected values for pipedrive owners
+ *
+ * @param {String} currentUserId Optional - The current user id selected, otherwise the current user
+ * @return {Widget} A selection input widgets to display
+ */
+function getOwnerIdDropdown(currentUserId){
+  var userDic = PipedriveAPILibrary.USER_MAP_BY_NAME;
+  if(!currentUserId){
+    currentUserId = (userDic[getUserName()] || "");
+  }
+  var widget = CardService.newSelectionInput()
+    .setFieldName("owner_id")
+    .setTitle("Entry Owner")
+    .setType(CardService.SelectionInputType.DROPDOWN);
+  for(var user in userDic){
+    widget.addItem(user, userDic[user], userDic[user] == currentUserId);
+  }
+  return widget;
+}
+
+/* 
  * Populate a list of widgets for phone or email address text inputs with values if given in parameters
  *
  * @param {{}} parameters The parameters with current values, {} if none
@@ -423,6 +444,41 @@ function buildAddPipedriveActivitiesCard(e){
   
   var displayActivitySection = pipedriveActivityDisplaySection(pipedriveId);
   card.addSection(displayActivitySection);
+  
+  var actionResponse = CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation()
+       .pushCard(card.build()))
+    .build();
+    
+  return actionResponse;
+}
+
+/*
+ * Display a card to confirm merge details
+ *
+ * @param {Event Object} e
+ * @return {Card}
+ */
+function mergePersonsCard(e){
+  var parameters = e.commonEventObject.parameters;
+  var mergeWithId = parameters.mergeWithId;
+  var mergeWithName = parameters.mergeWithName;
+  var deleteId = parameters.deleteId;
+  var deleteName = parameters.deleteName;
+  var ownerId = parameters.ownerId;
+  var card = CardService.newCardBuilder()
+    .setHeader(CardService.newCardHeader()
+    .setTitle("Merge Contact "+deleteId+" with "+mergeWithId)
+    .setSubtitle(deleteName+" --> "+mergeWithName)
+    .setImageUrl(IMAGES.PIPEDRIVE));
+  
+  var section = CardService.newCardSection();
+  
+  var ownerSelectionInput = getOwnerIdDropdown(ownerId);
+  section.addWidget(ownerSelectionInput);
+  
+  
+  card.addSection(section);
   
   var actionResponse = CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation()
