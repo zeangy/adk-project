@@ -761,11 +761,22 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     //.setCollapsible(true)
     .setHeader("More Options");
   
+  var duplicateSearch = [];
+  // borrower names
+  duplicateSearch.push(name);
+  // full address
+  duplicateSearch.push(collateral_list.map(function(x){ return (x.unit_number ? x.unit_number+" - " : "")+x.street_address+" "+x.city+" "+x.province+" "+(x.postal_code || "").substring(0,3);}).join(", "));
+  // condo building name
+  var condoList = collateral_list.filter(function(x){ return x.unit_number != null; });
+  if(condoList.length > 0){
+    duplicateSearch.push(condoList.map(function(x){ return x.street_address+" "+x.city+" "+x.province; }).join(", "));
+  }
+  
   var quickLinksParameters = {
     'applicationId':applicationId, 
     'status': status, 
     'folderName': getFolderName(response.applicants), 
-    'duplicateSearchTerm': name+", "+collateral_list.map(function(x){ return (x.unit_number ? x.unit_number+" - " : "")+x.street_address+" "+x.city+" "+x.province+" "+(x.postal_code || "").substring(0,3);}).join(", ")
+    'duplicateSearchTerm': duplicateSearch.join(", ")
   };
   
   moreOptionsSection.addWidget(CardService.newTextButton()
