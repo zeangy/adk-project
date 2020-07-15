@@ -562,18 +562,54 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   }
 }
 
+function getPersonSuggestionWidget(){
+  return CardService.newTextInput().setTitle("Link To Contact").setFieldName("person_id")
+    .setSuggestionsAction(CardService.newAction().setFunctionName("getPipedrivePersonSuggestions"));
+}
+
 function getPipedrivePersonSuggestions(e){
   var formInput = (e.commonEventObject.formInputs || {});
   var searchTerm = parseSingleFormInput(formInput.person_id);
+  var searchFunction = PipedriveAPILibrary.searchPersons;
+  var mapFunction = function(x){
+    return x.id+" - "+x.name+(x.organization && x.organization.name ? " @ "+x.organization.name : "");
+  }
+  return getSuggestionOptions(searchTerm, searchFunction, mapFunction, "No contacts found matching: "+searchTerm);
+}
+
+function getOrganizationSuggestionWidget(){
+  return CardService.newTextInput().setTitle("Link To Organization").setFieldName("org_id")
+    .setSuggestionsAction(CardService.newAction().setFunctionName("getPipedriveOrganizationSuggestions"));
+}
+
+function getPipedriveOrganizationSuggestions(e){
+  var formInput = (e.commonEventObject.formInputs || {});
+  var searchTerm = parseSingleFormInput(formInput.org_id);
+  var searchFunction = PipedriveAPILibrary.searchOrganizations;
+  var mapFunction = function(x){
+    return x.id+" - "+x.name;
+  }
+  return getSuggestionOptions(searchTerm, searchFunction, mapFunction, "No organizations found matching: "+searchTerm);
+}
+
+/*
+ * Get generalized suggestion options
+ *
+ * @param {String} searchTerm The term to search for
+ * @param {Function} searchFunction The Pipedrive search function
+ * @param {Function} mapFunction The function to parse the search into displayed suggestions
+ * @param {String} errorMessage The message to show when there are no suggestions
+ * @return {SuggestionsResponse} The suggestions
+ */
+function getSuggestionOptions(searchTerm, searchFunction, mapFunction, errorMessage){
   var options = [];
   if(searchTerm.length > 2){
-    options = PipedriveAPILibrary.searchPersons(searchTerm).map(function(x){return x.item.id+" - "+x.item.name+(x.item.organization && x.item.organization.name ? " @ "+x.item.organization.name : "");});
+    options = searchFunction(searchTerm).map(function(x){return x.item;}).map(mapFunction);
   }
   if(options.length < 1){
-    options = ["No contacts found matching: "+searchTerm];
+    options = [errorMessage];
   }
-  //(x.item.organization && x.item.organization.name ? " at "+x.item.organization.name : "")
-   var suggestions = CardService.newSuggestions().addSuggestions(options);
+  var suggestions = CardService.newSuggestions().addSuggestions(options);
   return CardService.newSuggestionsResponseBuilder()
       .setSuggestions(suggestions)
       .build();
@@ -588,9 +624,9 @@ function buildAddOutsideLendingCard(){
   var section = CardService.newCardSection();
   
   var customFieldOptions = PipedriveAPILibrary.getDealCustomFieldOptionsByName();
-  
-  section.addWidget(CardService.newTextInput().setTitle("Person").setFieldName("person_id")
-    .setSuggestionsAction(CardService.newAction().setFunctionName("getPipedrivePersonSuggestions")));
+
+  section.addWidget(getPersonSuggestionWidget());
+    
   section.addWidget(CardService.newTextInput()
     .setFieldName("title")
     .setTitle("Description")
@@ -619,15 +655,21 @@ function buildAddOutsideLendingCard(){
   section.addWidget(CardService.newTextButton()
     .setText("Submit")
     .setOnClickAction(CardService.newAction()
-    .setFunctionName("addOutsideLendingDeal")
+    .setFunctionName("createNewPipedriveDeal")
     )
   );
   card.addSection(section);
-  
+
   return card.build();
 }
 
-function addOutsideLendingDeal(e){
+/*
+ * Create a new deal based on form input
+ *
+ * @param {Event Object} e
+ * @return {ActionResponse} Pop to last card and display message
+ */
+function createNewPipedriveDeal(e){
   var formInputs = (e.commonEventObject.formInputs || {});
   
   var data = {};
