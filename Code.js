@@ -386,6 +386,7 @@ function searchListSection(response, errorMsg, showIcon){
       var referralSource = (currentSource ? currentSource : "");
       var keyValue = CardService.newKeyValue()
         .setTopLabel(response[i].state+" | Broker: "+(response[i].referral_source_code && response[i].referral_source_code[1] ? response[i].referral_source_code[1] : "NOT SET"))
+        .setBottomLabel(response[i].collateral_description.join("/ "))
         .setContent(applicantName);
       if(response[i].primary_applicant_name){
         keyValue.setOnClickAction(CardService.newAction()
@@ -760,10 +761,16 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     //.setCollapsible(true)
     .setHeader("More Options");
   
+  var quickLinksParameters = {
+    'applicationId':applicationId, 
+    'status': status, 
+    'folderName': getFolderName(response.applicants), 
+    'duplicateSearchTerm': name+", "+collateral_list.map(function(x){ return (x.unit_number ? x.unit_number+" - " : "")+x.street_address+" "+x.city+" "+x.province+" "+(x.postal_code || "").substring(0,3);}).join(", ")
+  };
   
   moreOptionsSection.addWidget(CardService.newTextButton()
     .setText("Quick Links")
-    .setOnClickAction(CardService.newAction().setFunctionName("buildQuickLinksCard").setParameters({'applicationId':applicationId, 'status': status, 'folderName': getFolderName(response.applicants)})));
+    .setOnClickAction(CardService.newAction().setFunctionName("buildQuickLinksCard").setParameters(quickLinksParameters)));
 
   moreOptionsSection.addWidget(CardService.newTextButton()
     .setText("Broker and Solicitor Notes")
@@ -808,11 +815,18 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   
 }
 
+/*
+ * Create quick links card
+ *
+ * @param {Event Object} e
+ * @return {Card}
+ */
 function buildQuickLinksCard(e){
-  
-  var applicationId = e.parameters.applicationId;
-  var folderName = e.parameters.folderName;
-  var currentStatus = e.parameters.status;
+  var parameters = e.commonEventObject.parameters;
+  var applicationId = (parameters.applicationId || "");
+  var folderName = (parameters.folderName || "");
+  var currentStatus = (parameters.status || "");
+  var duplicateSearchTerm = (parameters.duplicateSearchTerm || "");
   
   var rateCalculatorLink = "https://script.google.com/a/macros/altmortgages.ca/s/AKfycbz-4g3tn2CA9U_E3S484ifOYtLIJ2Q_BfPqymtaCPUxVZIfzoc/exec?ID="+applicationId+"&User="+getUserName()//renderEmailTemplate(applicationId, "b6b098e2-6dc3-4593-a095-2607a3d16cdb").rendered_body;
   //rateCalculatorLink = rateCalculatorLink.replace(/<!--[\s\S]*?-->/g, "").replace(/\&amp\;/g, "&");
@@ -826,6 +840,7 @@ function buildQuickLinksCard(e){
   //var folderName = pipelineAndFolderLink.match(/Name\=(.*?)\&/)[1];
   
   var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader().setTitle(folderName));
+
   var section = CardService.newCardSection();
   
   if(e.parameters.reload){
@@ -881,6 +896,14 @@ function buildQuickLinksCard(e){
   section.addWidget(driveFolderDesc);      
   
   card.addSection(section);
+  
+  // search for duplicates
+  var searchList = duplicateSearchTerm.split(", ");
+  for(var i in searchList){
+    var searchTerm = searchList[i];
+    var response = LendeskAPILibrary.searchApplications(searchTerm).filter(function(x){return x.id != applicationId;});
+    card.addSection(searchListSection(response, "<i>No duplicates suspected</b></i>", false).setHeader("Duplicate search: <b>"+searchTerm+"</b>"));
+  }
   
   if(e.parameters.reload){
     var actionResponse = card.build();

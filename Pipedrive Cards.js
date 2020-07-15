@@ -611,7 +611,7 @@ function addOutsideLendingDeal(e){
   var formInputs = (e.commonEventObject.formInputs || {});
               
   var header = CardService.newCardHeader()
-      .setTitle("TEST")
+      .setTitle("TEST - Not connected yet")
       .setImageUrl(IMAGES.PIPEDRIVE);
   var card = CardService.newCardBuilder().setHeader(header);
   var section = CardService.newCardSection().addWidget(CardService.newTextParagraph().setText(JSON.stringify(formInputs)));
