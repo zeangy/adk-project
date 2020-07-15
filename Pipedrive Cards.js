@@ -561,3 +561,60 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
     return card.build();
   }
 }
+
+function buildAddOutsideLendingCard(){
+  var header = CardService.newCardHeader()
+      .setTitle("Record Submission Decline")
+      .setSubtitle("For Files Outside Lending Guidelines")
+      .setImageUrl(IMAGES.PIPEDRIVE);
+  var card = CardService.newCardBuilder().setHeader(header);
+  var section = CardService.newCardSection();
+  
+  var customFieldOptions = PipedriveAPILibrary.getDealCustomFieldOptionsByName();
+  section.addWidget(CardService.newTextInput()
+    .setFieldName("title")
+    .setTitle("Description")
+  );
+  
+  section.addWidget(CardService.newTextInput()
+    .setFieldName(customFieldOptions["LTV"]["key"])
+    .setTitle("Requested LTV")
+  );
+  
+  section.addWidget(CardService.newTextInput()
+    .setFieldName("value")
+    .setTitle("Requested Loan Amount")
+  );
+  
+  var provinceSelectionWidget = getSelectionWidgetByParameters("", customFieldOptions["Province"],  CardService.SelectionInputType.DROPDOWN);
+  section.addWidget(provinceSelectionWidget);
+  
+  var stageOptions = PipedriveAPILibrary.OUTSIDE_LENDING_GUIDELINE_STAGES;
+  var stageSelectionWidget = CardService.newSelectionInput().setFieldName("stage_id").setTitle("Type").setType(CardService.SelectionInputType.RADIO_BUTTON);
+  for(var i in stageOptions){
+    stageSelectionWidget.addItem(stageOptions[i], i, false);
+  }
+  section.addWidget(stageSelectionWidget);
+  
+  section.addWidget(CardService.newTextButton()
+    .setText("Submit")
+    .setOnClickAction(CardService.newAction()
+    .setFunctionName("addOutsideLendingDeal")
+    )
+  );
+  card.addSection(section);
+  
+  return card.build();
+}
+
+function addOutsideLendingDeal(e){
+  var formInputs = (e.commonEventObject.formInputs || {});
+              
+  var header = CardService.newCardHeader()
+      .setTitle("TEST")
+      .setImageUrl(IMAGES.PIPEDRIVE);
+  var card = CardService.newCardBuilder().setHeader(header);
+  var section = CardService.newCardSection().addWidget(CardService.newTextParagraph().setText(JSON.stringify(formInputs)));
+  card.addSection(section);
+  return card.build();
+}

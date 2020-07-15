@@ -476,8 +476,8 @@ function mergePersonsCard(e){
   
   var ownerSelectionInput = getOwnerIdDropdown(ownerId);
   section.addWidget(ownerSelectionInput);
-  
-  
+  section.addWidget(CardService.newTextParagraph().setText("<a href='https://neighbourhoodholdings-originations.pipedrive.com/person/"+mergeWithId+"'>Person 1 Page</a>"));
+  section.addWidget(CardService.newTextParagraph().setText("<a href='https://neighbourhoodholdings-originations.pipedrive.com/person/"+deleteId+"'>Person 2 Page</a>"));
   card.addSection(section);
   
   var actionResponse = CardService.newActionResponseBuilder()

@@ -57,6 +57,9 @@
       }, {
         "label": "Create Contact",
         "runFunction": "buildAddContactCard"
+      }, {
+        "label" : "Record Decline",
+        "runFunction" : "buildAddOutsideLendingCard"
       }],
       "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/", "https://neighbourhoodholdings-originations.pipedrive.com/"]
     },
