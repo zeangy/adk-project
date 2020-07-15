@@ -562,6 +562,23 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   }
 }
 
+function getPipedrivePersonSuggestions(e){
+  var formInput = (e.commonEventObject.formInputs || {});
+  var searchTerm = parseSingleFormInput(formInput.person_id);
+  var options = [];
+  if(searchTerm.length > 2){
+    options = PipedriveAPILibrary.searchPersons(searchTerm).map(function(x){return x.item.id+" - "+x.item.name+(x.item.organization && x.item.organization.name ? " @ "+x.item.organization.name : "");});
+  }
+  if(options.length < 1){
+    options = ["No contacts found matching: "+searchTerm];
+  }
+  //(x.item.organization && x.item.organization.name ? " at "+x.item.organization.name : "")
+   var suggestions = CardService.newSuggestions().addSuggestions(options);
+  return CardService.newSuggestionsResponseBuilder()
+      .setSuggestions(suggestions)
+      .build();
+}
+
 function buildAddOutsideLendingCard(){
   var header = CardService.newCardHeader()
       .setTitle("Record Submission Decline")
@@ -571,6 +588,9 @@ function buildAddOutsideLendingCard(){
   var section = CardService.newCardSection();
   
   var customFieldOptions = PipedriveAPILibrary.getDealCustomFieldOptionsByName();
+  
+  section.addWidget(CardService.newTextInput().setTitle("Person").setFieldName("person_id")
+    .setSuggestionsAction(CardService.newAction().setFunctionName("getPipedrivePersonSuggestions")));
   section.addWidget(CardService.newTextInput()
     .setFieldName("title")
     .setTitle("Description")
@@ -609,12 +629,37 @@ function buildAddOutsideLendingCard(){
 
 function addOutsideLendingDeal(e){
   var formInputs = (e.commonEventObject.formInputs || {});
-              
-  var header = CardService.newCardHeader()
-      .setTitle("TEST - Not connected yet")
-      .setImageUrl(IMAGES.PIPEDRIVE);
-  var card = CardService.newCardBuilder().setHeader(header);
-  var section = CardService.newCardSection().addWidget(CardService.newTextParagraph().setText(JSON.stringify(formInputs)));
-  card.addSection(section);
-  return card.build();
+  
+  var data = {};
+  for(var i in formInputs){
+    var value = formInputs[i].stringInputs.value[0];
+    var ltvFieldName = PipedriveAPILibrary.DEAL_FIELDS["ltv"];
+    if(i == ltvFieldName || i == "value"){
+      value = parseFloat(value.match(/(\d|\.+)/g).join(""));
+      
+      if(i == ltvFieldName && value > 1){
+        value = value/100;
+      }
+    }
+    if(i == "person_id"){
+      // if the parsed string is not all numbers, do not assign a person
+      value = value.split(" - ")[0];
+      var numberMatch = value.match(/(\d+)/g);
+      if(!numberMatch || numberMatch[0].length != value.length){
+        value = null;
+      }
+    }
+    data[i] = value;
+  }
+  var ownerId = getPipedriveUserId();
+  if(ownerId){
+    data["user_id"] = ownerId;
+  }
+  var response = PipedriveAPILibrary.createDealFromData(data);
+  
+  var message = (response.success ? "Deal Recorded! - " : "Deal Record Failed  - ")+(data["title"] || "");
+  return CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation().popCard())
+    .setNotification(CardService.newNotification().setText(message))
+    .build();
 }

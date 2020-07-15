@@ -123,6 +123,15 @@ function getUserDetails(userName){
 }
 
 /*
+ * Get the Pipedrive Id for the current user
+ *
+ * @return {String} The Id of the current user, null if not found
+ */
+function getPipedriveUserId(){
+  return PipedriveAPILibrary.USER_MAP_BY_NAME[getUserName()];
+}
+
+/*
  * Format time as HH:MM
  *
  * @param {Float} time The time in hours (e.g. 6:30 would be 6.5)
@@ -139,4 +148,9 @@ function formatTime(time){
   catch(e){
   }
   return formattedTime;
+}
+
+
+function parseSingleFormInput(field){
+  return (field.stringInputs && field.stringInputs.value ? field.stringInputs.value[0] : "");
 }
