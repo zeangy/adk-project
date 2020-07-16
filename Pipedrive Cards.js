@@ -707,8 +707,10 @@ function buildAddOutsideLendingCard(e){
     .setText("Submit")
     .setOnClickAction(CardService.newAction()
     .setFunctionName("createNewPipedriveDeal")
+    .setParameters({"person_id" : (parameters.person_id || "")})
     )
   );
+  
   card.addSection(section);
 
   return (parameters.reload ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build());
@@ -721,11 +723,13 @@ function buildAddOutsideLendingCard(e){
  * @return {ActionResponse} Pop to last card and display message
  */
 function createNewPipedriveDeal(e){
-  var formInputs = (e.commonEventObject.formInputs || {});
+  var eventData = parseEventObject(e);
+  var parameters = eventData["parameters"];
+  var formInputs = eventData["formInputs"];
   
   var data = {};
   for(var i in formInputs){
-    var value = formInputs[i].stringInputs.value[0];
+    var value = formInputs[i];
     var ltvFieldName = PipedriveAPILibrary.DEAL_FIELDS["ltv"];
     if(i == ltvFieldName || i == "value"){
       value = parseFloat(value.match(/(\d|\.+)/g).join(""));
@@ -734,16 +738,14 @@ function createNewPipedriveDeal(e){
         value = value/100;
       }
     }
-    if(i == "person_id"){
-      // if the parsed string is not all numbers, do not assign a person
-      value = value.split(" - ")[0];
-      var numberMatch = value.match(/(\d+)/g);
-      if(!numberMatch || numberMatch[0].length != value.length){
-        value = null;
-      }
-    }
     data[i] = value;
   }
+  var personId = parsePipedriveIdFromSuggestion(parameters["person_id"]);
+  if(personId){
+    // if the parsed string is not all numbers, do not assign a person
+    data["person_id"] = personId;
+  }
+  
   var ownerId = getPipedriveUserId();
   if(ownerId){
     data["user_id"] = ownerId;
