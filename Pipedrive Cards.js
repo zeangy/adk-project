@@ -570,7 +570,21 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   }
 }
 
-function getSuggestionsWidget(title, fieldName, suggestionFunctionName, onChangeFunctionName, currentValue, pipedriveId){
+/*
+ * Create a suggestions widget that updated to a key value if item slected
+ *
+ * @param {String} type The type of selector, person or organization
+ * @param {String} onChangeFunctionName The name of the function to call if the text input value changes
+ * @param {String} currentValue Optional - The value currently set, if any
+ * @param {String} pipedriveId Optional - The pipedrive Id to pass on when form is submitted
+ * @return {Widget} Either a text input or key value depending on if current value is a valid selection
+ */
+function getSuggestionsWidget(type, onChangeFunctionName, currentValue, pipedriveId){
+  var map = PIPEDRIVE_SUGGESTION_MAP[type];
+  var title = map.title;
+  var fieldName = map.fieldName;
+  var suggestionFunctionName = map.suggestionFunctionName;
+  
   var widget = null;
   var parameters = {"reload" : "true"};
   if(pipedriveId){
@@ -601,7 +615,7 @@ function getSuggestionsWidget(title, fieldName, suggestionFunctionName, onChange
       .setTitle(title)
       .setFieldName(fieldName)
       .setOnChangeAction(CardService.newAction().setFunctionName(onChangeFunctionName).setParameters(parameters))
-      .setSuggestionsAction(CardService.newAction().setFunctionName(suggestionFunctionName));
+      .setSuggestionsAction(CardService.newAction().setFunctionName("getSuggestionOptions").setParameters({"type":type}));
     if(invalidSelection){
       widget.setHint("Invalid option. Please select an option from the suggestions, it must start with a number.");
     }
@@ -610,43 +624,30 @@ function getSuggestionsWidget(title, fieldName, suggestionFunctionName, onChange
 }
 
 function getPersonSuggestionWidget(currentValue, pipedriveId){
-  return getSuggestionsWidget("Link To Contact", "person_id", "getPipedrivePersonSuggestions", "buildAddOutsideLendingCard", currentValue, pipedriveId);
-}
-
-function getPipedrivePersonSuggestions(e){
-  var formInputs = parseFormInputs(e);
-  var searchTerm = formInputs["person_id"];
-  var searchFunction = PipedriveAPILibrary.searchPersons;
-  var mapFunction = function(x){
-    return x.id+" - "+x.name+(x.organization && x.organization.name ? " @ "+x.organization.name : "");
-  }
-  return getSuggestionOptions(searchTerm, searchFunction, mapFunction, "No contacts found matching: "+searchTerm);
+  return getSuggestionsWidget("person", "buildAddOutsideLendingCard", currentValue, pipedriveId);
 }
 
 function getOrganizationSuggestionWidget(currentValue, pipedriveId){
-  return getSuggestionsWidget("Link To Organization", "org_id", "getPipedriveOrganizationSuggestions", "buildAddContactCard", currentValue, pipedriveId);
-}
-
-function getPipedriveOrganizationSuggestions(e){
-  var formInputs = parseFormInputs(e);
-  var searchTerm = formInputs["org_id"];
-  var searchFunction = PipedriveAPILibrary.searchOrganizations;
-  var mapFunction = function(x){
-    return x.id+" - "+x.name;
-  }
-  return getSuggestionOptions(searchTerm, searchFunction, mapFunction, "No organizations found matching: "+searchTerm);
+  return getSuggestionsWidget("organization", "buildAddContactCard", currentValue, pipedriveId);
 }
 
 /*
  * Get generalized suggestion options
  *
- * @param {String} searchTerm The term to search for
- * @param {Function} searchFunction The Pipedrive search function
- * @param {Function} mapFunction The function to parse the search into displayed suggestions
- * @param {String} errorMessage The message to show when there are no suggestions
+ * @param {Event Object} e Containss form inputs with searchTerm to search for and parameters with type person or organization
  * @return {SuggestionsResponse} The suggestions
  */
-function getSuggestionOptions(searchTerm, searchFunction, mapFunction, errorMessage){
+function getSuggestionOptions(e){
+  var eventData = parseEventObject(e);
+  var parameters = eventData.parameters;
+  var formInputs = eventData.formInputs;
+  
+  var map = PIPEDRIVE_SUGGESTION_MAP[parameters.type];
+  var searchFunction = map.searchFunction;
+  var mapFunction = map.mapFunction;
+  var searchTerm = formInputs[map.fieldName];
+  var errorMessage = map.errorMessage+searchTerm;
+  
   var options = [];
   if(searchTerm.length > 2){
     options = searchFunction(searchTerm).map(function(x){return x.item;}).map(mapFunction);
