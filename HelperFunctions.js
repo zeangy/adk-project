@@ -152,5 +152,16 @@ function formatTime(time){
 
 
 function parseSingleFormInput(field){
-  return (field.stringInputs && field.stringInputs.value ? field.stringInputs.value[0] : "");
+  return (field && field.stringInputs && field.stringInputs.value ? field.stringInputs.value[0] : "");
+}
+
+function parsePipedriveIdFromSuggestion(value){
+  if(value){
+    value = value.split(" - ")[0];
+    var numberMatch = value.match(/(\d+)/g);
+    if(!numberMatch || numberMatch[0].length != value.length){
+      value = null;
+    }
+  }
+  return value;
 }

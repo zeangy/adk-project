@@ -87,6 +87,8 @@ function buildAddContactCard(e){
   );
   var section = CardService.newCardSection();
   
+  section.addWidget(getOrganizationSuggestionWidget(parameters.org_id));
+  
   var name =  CardService.newTextInput()
     .setFieldName("name")
     .setTitle("Full Name");

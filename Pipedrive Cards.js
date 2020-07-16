@@ -439,6 +439,27 @@ function pipedriveDealDisplaySection(dealDetails, limit, otherWidgets){
   return section;
 }
 
+function getUpdateContactParameters(contactDetails){
+  var updateContactParameters = {
+    "name" : (contactDetails.name || ""),
+    "type" : (contactDetails.type || ""),
+    "tag" : (contactDetails.tag || ""),
+    "province" : (contactDetails.province || ""),
+    "pipedriveId" : (contactDetails.id || "").toString(),
+    "ownerId" : (contactDetails.owner_id && contactDetails.owner_id.id ? contactDetails.owner_id.id.toString() : ""),
+  };
+  if(contactDetails.org_id && contactDetails.org_id.name && contactDetails.org_id.value){
+    updateContactParameters["org_id"] = contactDetails.org_id.value.toString()+" - "+contactDetails.org_id.name;
+  }
+  for(var i in contactDetails.email){
+    updateContactParameters["email"+i] = contactDetails.email[i].value;
+  }
+  for(var i in contactDetails.phone){
+    updateContactParameters["phone"+i] = contactDetails.phone[i].value;
+  }
+  return updateContactParameters;
+}
+
 /*
  * Creates a card with Pipedrive contact details
  *
@@ -460,20 +481,7 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
       .setImageUrl(IMAGES.PIPEDRIVE);
   var card = CardService.newCardBuilder().setHeader(header);
 
-  var updateContactParameters = {
-    "name" : (contactDetails.name || ""),
-    "type" : (contactDetails.type || ""),
-    "tag" : (contactDetails.tag || ""),
-    "province" : (contactDetails.province || ""),
-    "pipedriveId" : personId,
-    "ownerId" : (contactDetails.owner_id && contactDetails.owner_id.id ? contactDetails.owner_id.id.toString() : "")
-  };
-  for(var i in contactDetails.email){
-    updateContactParameters["email"+i] = contactDetails.email[i].value;
-  }
-  for(var i in contactDetails.phone){
-    updateContactParameters["phone"+i] = contactDetails.phone[i].value;
-  }
+  var updateContactParameters = getUpdateContactParameters(contactDetails);
   var updateContactButton = CardService.newTextButton()
     .setText("Edit")
     .setOnClickAction(CardService.newAction()
@@ -562,9 +570,50 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   }
 }
 
-function getPersonSuggestionWidget(){
-  return CardService.newTextInput().setTitle("Link To Contact").setFieldName("person_id")
-    .setSuggestionsAction(CardService.newAction().setFunctionName("getPipedrivePersonSuggestions"));
+function getSuggestionsWidget(title, fieldName, suggestionFunctionName, onChangeFunctionName, currentValue){
+  var widget = null;
+  var parameters = {"reload" : "true"};
+  var invalidSelection = false;
+  
+  // check that current value is in proper format
+  if(currentValue){
+    var selectedId = parsePipedriveIdFromSuggestion(currentValue);
+    if(!selectedId){
+      currentValue = null;
+      invalidSelection = true;
+    }
+  }
+  if(currentValue){
+
+    // reset selection if change is clicked
+    widget = CardService.newKeyValue()
+      .setContent(currentValue)
+      .setTopLabel(title)
+      .setButton(CardService.newTextButton()
+        .setOnClickAction(CardService.newAction().setFunctionName(onChangeFunctionName).setParameters(parameters))
+        .setText("Change"));
+  }
+  else{
+    widget = CardService.newTextInput()
+      .setTitle(title)
+      .setFieldName(fieldName)
+      .setOnChangeAction(CardService.newAction().setFunctionName(onChangeFunctionName).setParameters(parameters))
+      .setSuggestionsAction(CardService.newAction().setFunctionName(suggestionFunctionName));
+    if(invalidSelection){
+      widget.setHint("Invalid option. Please select an option from the suggestions, it must start with a number.");
+    }
+  }
+  return widget;
+}
+
+function getPersonSuggestionWidget(currentValue){
+  return getSuggestionsWidget("Link To Contact", "person_id", "getPipedrivePersonSuggestions", "buildAddOutsideLendingCard", currentValue);
+}
+
+function updateAddOutsideLendingCard(e){
+  var formInput = (e.commonEventObject.formInputs || {});
+  var searchTerm = parseSingleFormInput(formInput.person_id);
+  return buildAddOutsideLendingCard(e);
 }
 
 function getPipedrivePersonSuggestions(e){
@@ -577,9 +626,8 @@ function getPipedrivePersonSuggestions(e){
   return getSuggestionOptions(searchTerm, searchFunction, mapFunction, "No contacts found matching: "+searchTerm);
 }
 
-function getOrganizationSuggestionWidget(){
-  return CardService.newTextInput().setTitle("Link To Organization").setFieldName("org_id")
-    .setSuggestionsAction(CardService.newAction().setFunctionName("getPipedriveOrganizationSuggestions"));
+function getOrganizationSuggestionWidget(currentValue){
+  return getSuggestionsWidget("Link To Organization", "org_id", "getPipedriveOrganizationSuggestions", "buildAddContactCard", currentValue);
 }
 
 function getPipedriveOrganizationSuggestions(e){
@@ -615,18 +663,25 @@ function getSuggestionOptions(searchTerm, searchFunction, mapFunction, errorMess
       .build();
 }
 
-function buildAddOutsideLendingCard(){
+function buildAddOutsideLendingCard(e){
   var header = CardService.newCardHeader()
       .setTitle("Record Submission Decline")
       .setSubtitle("For Files Outside Lending Guidelines")
       .setImageUrl(IMAGES.PIPEDRIVE);
+  
   var card = CardService.newCardBuilder().setHeader(header);
   var section = CardService.newCardSection();
   
   var customFieldOptions = PipedriveAPILibrary.getDealCustomFieldOptionsByName();
-
-  section.addWidget(getPersonSuggestionWidget());
-    
+  
+  var formInput = (e ? e.commonEventObject.formInputs : {});
+  var value = (formInput ? parseSingleFormInput(formInput.person_id) : null);
+  if(value){
+    section.addWidget(getPersonSuggestionWidget(value))
+  }
+  else{
+    section.addWidget(getPersonSuggestionWidget());
+  } 
   section.addWidget(CardService.newTextInput()
     .setFieldName("title")
     .setTitle("Description")
