@@ -70,17 +70,10 @@ function addPipedriveActivity(e){
  * @return {Card}
  */
 function buildAddContactCard(e){
-  var parameters = (e.commonEventObject.parameters || {});
-  var formInput = (e.commonEventObject.formInputs || {});
-  
-  if(parameters.reload){
-    for(var i in formInput){
-      if(formInput[i]){
-        parameters[i] = formInput[i].stringInputs.value.join(",");
-      }
-    }
-  }
-  
+  var eventData = parseEventObject(e);
+  var parameters = eventData["parameters"];
+  var formInput = eventData["formInputs"];
+
   var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader()
     .setTitle((Object.keys(parameters).length > 0 ? "Update" : "Create")+" Contact")
     .setImageUrl(IMAGES.PIPEDRIVE)

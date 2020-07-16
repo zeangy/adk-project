@@ -150,11 +150,74 @@ function formatTime(time){
   return formattedTime;
 }
 
-
-function parseSingleFormInput(field){
-  return (field && field.stringInputs && field.stringInputs.value ? field.stringInputs.value[0] : "");
+/*
+ * Convert string form inputs into a more useful format
+ *
+ * @param {Event Object} e
+ * @return {{}} The form inputs values as strings with lists seperated by commmas, {} if no formInputs in event object
+ */
+function parseFormInputs(e){
+  var formInput = {};
+  
+  if(e && e.commonEventObject && e.commonEventObject.formInputs){
+    formInput = e.commonEventObject.formInputs;
+    for(var i in formInput){
+      if(formInput[i].stringInputs && formInput[i].stringInputs.value){
+        formInput[i] = formInput[i].stringInputs.value.join(",");
+      }
+    }
+  }
+  
+  return formInput;
 }
 
+/*
+ * Replace parameters with form inputs if reload
+ *
+ * @param {Event Object} e
+ * @param {{}} formInputs Optional - The parsed form inputs
+ * @return {{}} The parameter values, {} if no parameters in event object
+ */
+function parseParameters(e, formInputs){
+  var parameters = {};
+  if(e && e.commonEventObject && e.commonEventObject.parameters){
+    parameters = e.commonEventObject.parameters;
+    
+    // if reload, use the current form inputs
+    if(parameters.reload){
+      var formInput = (formInputs ? formInputs : parseFormInputs(e));  
+      for(var i in formInput){
+        if(formInput[i]){
+          parameters[i] = formInput[i];
+        }
+      }
+    }
+  }
+  return parameters;
+}
+
+/*
+ * Format event object data in more useful form
+ *
+ * @param {Event Object} e
+ * @return {{}} Dictionary containing formInputs and parameters objects with formatted data
+ */
+function parseEventObject(e){
+  var formInputs = parseFormInputs(e);
+  var parameters = parseParameters(e, formInputs);
+  var data = {
+    "formInputs" : formInputs,
+    "parameters" : parameters
+  };
+  return data;
+}
+
+/*
+ * Extract Pipedrive Id from human readable name
+ *
+ * @param {String} value The human readable name
+ * @return {String} The extracted Pipedrive Id, null if improper format
+ */
 function parsePipedriveIdFromSuggestion(value){
   if(value){
     value = value.split(" - ")[0];

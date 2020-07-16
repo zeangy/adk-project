@@ -610,15 +610,9 @@ function getPersonSuggestionWidget(currentValue){
   return getSuggestionsWidget("Link To Contact", "person_id", "getPipedrivePersonSuggestions", "buildAddOutsideLendingCard", currentValue);
 }
 
-function updateAddOutsideLendingCard(e){
-  var formInput = (e.commonEventObject.formInputs || {});
-  var searchTerm = parseSingleFormInput(formInput.person_id);
-  return buildAddOutsideLendingCard(e);
-}
-
 function getPipedrivePersonSuggestions(e){
-  var formInput = (e.commonEventObject.formInputs || {});
-  var searchTerm = parseSingleFormInput(formInput.person_id);
+  var formInputs = parseFormInputs(e);
+  var searchTerm = formInputs["person_id"];
   var searchFunction = PipedriveAPILibrary.searchPersons;
   var mapFunction = function(x){
     return x.id+" - "+x.name+(x.organization && x.organization.name ? " @ "+x.organization.name : "");
@@ -631,8 +625,8 @@ function getOrganizationSuggestionWidget(currentValue){
 }
 
 function getPipedriveOrganizationSuggestions(e){
-  var formInput = (e.commonEventObject.formInputs || {});
-  var searchTerm = parseSingleFormInput(formInput.org_id);
+  var formInputs = parseFormInputs(e);
+  var searchTerm = formInputs["org_id"];
   var searchFunction = PipedriveAPILibrary.searchOrganizations;
   var mapFunction = function(x){
     return x.id+" - "+x.name;
@@ -664,6 +658,9 @@ function getSuggestionOptions(searchTerm, searchFunction, mapFunction, errorMess
 }
 
 function buildAddOutsideLendingCard(e){
+  var eventData = parseEventObject(e);
+  var parameters = eventData["parameters"];
+  
   var header = CardService.newCardHeader()
       .setTitle("Record Submission Decline")
       .setSubtitle("For Files Outside Lending Guidelines")
@@ -674,36 +671,35 @@ function buildAddOutsideLendingCard(e){
   
   var customFieldOptions = PipedriveAPILibrary.getDealCustomFieldOptionsByName();
   
-  var formInput = (e ? e.commonEventObject.formInputs : {});
-  var value = (formInput ? parseSingleFormInput(formInput.person_id) : null);
-  if(value){
-    section.addWidget(getPersonSuggestionWidget(value))
-  }
-  else{
-    section.addWidget(getPersonSuggestionWidget());
-  } 
+  section.addWidget(getPersonSuggestionWidget(parameters.person_id));
+  
   section.addWidget(CardService.newTextInput()
     .setFieldName("title")
     .setTitle("Description")
+    .setValue((parameters.title || ""))
   );
   
+  var ltvOptions = customFieldOptions["LTV"];
   section.addWidget(CardService.newTextInput()
-    .setFieldName(customFieldOptions["LTV"]["key"])
+    .setFieldName(ltvOptions["key"])
     .setTitle("Requested LTV")
+    .setValue((parameters[ltvOptions["key"]] || ""))
   );
   
   section.addWidget(CardService.newTextInput()
     .setFieldName("value")
     .setTitle("Requested Loan Amount")
+    .setValue((parameters.value || ""))
   );
   
-  var provinceSelectionWidget = getSelectionWidgetByParameters("", customFieldOptions["Province"],  CardService.SelectionInputType.DROPDOWN);
+  var provinceOptions = customFieldOptions["Province"];
+  var provinceSelectionWidget = getSelectionWidgetByParameters(parameters[provinceOptions["key"]], provinceOptions,  CardService.SelectionInputType.DROPDOWN);
   section.addWidget(provinceSelectionWidget);
   
   var stageOptions = PipedriveAPILibrary.OUTSIDE_LENDING_GUIDELINE_STAGES;
   var stageSelectionWidget = CardService.newSelectionInput().setFieldName("stage_id").setTitle("Type").setType(CardService.SelectionInputType.RADIO_BUTTON);
   for(var i in stageOptions){
-    stageSelectionWidget.addItem(stageOptions[i], i, false);
+    stageSelectionWidget.addItem(stageOptions[i], i, (parameters.stage_id == i));
   }
   section.addWidget(stageSelectionWidget);
   
@@ -715,7 +711,7 @@ function buildAddOutsideLendingCard(e){
   );
   card.addSection(section);
 
-  return card.build();
+  return (parameters.reload ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build());
 }
 
 /*
