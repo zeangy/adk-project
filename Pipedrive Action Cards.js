@@ -80,14 +80,12 @@ function buildAddContactCard(e){
   );
   var section = CardService.newCardSection();
   
-  section.addWidget(getOrganizationSuggestionWidget(parameters.org_id));
+  section.addWidget(getOrganizationSuggestionWidget(parameters.org_id, parameters.pipedriveId));
   
   var name =  CardService.newTextInput()
     .setFieldName("name")
-    .setTitle("Full Name");
-  if(parameters.name){
-    name.setValue(parameters.name);
-  }
+    .setTitle("Full Name")
+    .setValue((parameters.name || ""));
   section.addWidget(name);
   
   var emailWidgets = getTextWidgetsByParameters(parameters, "email");
@@ -116,9 +114,6 @@ function buildAddContactCard(e){
       "selectionType" : CardService.SelectionInputType.CHECK_BOX
      }
   };
-  var extraInfoSection = CardService.newCardSection();
-  extraInfoSection.setCollapsible(true)
-    .setNumUncollapsibleWidgets(1);
   
   for(var i in selectionInputs){
     var customFieldDic = selectionInputs[i]["dic"];
@@ -136,22 +131,21 @@ function buildAddContactCard(e){
   section.addWidget(submitButton);
   
   card.addSection(section);
-  //card.addSection(extraInfoSection);
-  //card.addSection(submitSection);
   
   return (parameters.reload ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build()); 
 }
 
 function addPipedriveContact(e){
-  var parameters = (e.commonEventObject.parameters || {});
+  var eventData = parseEventObject(e);
+  var parameters = eventData["parameters"];
+  var formInput = eventData["formInputs"];
   
-  var formInput = (e.commonEventObject.formInputs || {});
   var parsedFormInput = {
     "email" : [],
     "phone" : []
   };
   for(var i in formInput){
-    var currentValue = formInput[i].stringInputs.value.join(",");
+    var currentValue = formInput[i];
     if(i.indexOf("email") >= 0){
       parsedFormInput["email"].push({"value" : currentValue});
     }
@@ -162,12 +156,19 @@ function addPipedriveContact(e){
       parsedFormInput[i] = currentValue;
     }
   }
+  
+  var orgId = parsePipedriveIdFromSuggestion(parameters["org_id"]);
+  // if the parsed string is not numeric, do not assign an organization
+  if(orgId){
+    parsedFormInput["org_id"] = orgId;
+  }
 
   var message = " Contact!";
+  var response = {"success": false};
   
   // update
   if(parameters.pipedriveId){
-    var response = PipedriveAPILibrary.updatePersonFromData(parsedFormInput, parameters.pipedriveId);
+    response = PipedriveAPILibrary.updatePersonFromData(parsedFormInput, parameters.pipedriveId);
     message = "Updated"+message;
   }
   // create
@@ -177,14 +178,16 @@ function addPipedriveContact(e){
     if(ownerId){
       parsedFormInput["owner_id"] = ownerId;
     }
-    var response = PipedriveAPILibrary.createPersonFromData(parsedFormInput);
+    response = PipedriveAPILibrary.createPersonFromData(parsedFormInput);
     e.commonEventObject.parameters = {};
-    e.commonEventObject.parameters["pipedriveId"] = response.data.id.toString();
+    if(response && response.data && response.data.id){
+      e.commonEventObject.parameters["pipedriveId"] = response.data.id.toString();
+    }
     message = "Created"+message;
   }  
-  
+
   var actionResponse = CardService.newActionResponseBuilder();
-  if(e.commonEventObject.parameters["pipedriveId"]){
+  if(e.commonEventObject.parameters["pipedriveId"] && response.success){
     actionResponse.setNavigation(CardService.newNavigation()
       .updateCard(buildPipedrivePersonDetailsCard(e, message)))
       .setNotification(CardService.newNotification().setText(message));
@@ -482,4 +485,47 @@ function mergePersonsCard(e){
     .build();
     
   return actionResponse;
+}
+
+/*
+ * Create a new deal based on form input
+ *
+ * @param {Event Object} e
+ * @return {ActionResponse} Pop to last card and display message
+ */
+function createNewPipedriveDeal(e){
+  var eventData = parseEventObject(e);
+  var parameters = eventData["parameters"];
+  var formInputs = eventData["formInputs"];
+  
+  var data = {};
+  for(var i in formInputs){
+    var value = formInputs[i];
+    var ltvFieldName = PipedriveAPILibrary.DEAL_FIELDS["ltv"];
+    if(i == ltvFieldName || i == "value"){
+      value = parseFloat(value.match(/(\d|\.+)/g).join(""));
+      
+      if(i == ltvFieldName && value > 1){
+        value = value/100;
+      }
+    }
+    data[i] = value;
+  }
+  var personId = parsePipedriveIdFromSuggestion(parameters["person_id"]);
+  if(personId){
+    // if the parsed string is not all numbers, do not assign a person
+    data["person_id"] = personId;
+  }
+  
+  var ownerId = getPipedriveUserId();
+  if(ownerId){
+    data["user_id"] = ownerId;
+  }
+  var response = PipedriveAPILibrary.createDealFromData(data);
+  
+  var message = (response.success ? "Deal Recorded! - " : "Deal Record Failed  - ")+(data["title"] || "");
+  return CardService.newActionResponseBuilder()
+    .setNavigation(CardService.newNavigation().popCard())
+    .setNotification(CardService.newNotification().setText(message))
+    .build();
 }

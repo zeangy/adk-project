@@ -570,9 +570,12 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
   }
 }
 
-function getSuggestionsWidget(title, fieldName, suggestionFunctionName, onChangeFunctionName, currentValue){
+function getSuggestionsWidget(title, fieldName, suggestionFunctionName, onChangeFunctionName, currentValue, pipedriveId){
   var widget = null;
   var parameters = {"reload" : "true"};
+  if(pipedriveId){
+    parameters["pipedriveId"] = pipedriveId;
+  }
   var invalidSelection = false;
   
   // check that current value is in proper format
@@ -606,8 +609,8 @@ function getSuggestionsWidget(title, fieldName, suggestionFunctionName, onChange
   return widget;
 }
 
-function getPersonSuggestionWidget(currentValue){
-  return getSuggestionsWidget("Link To Contact", "person_id", "getPipedrivePersonSuggestions", "buildAddOutsideLendingCard", currentValue);
+function getPersonSuggestionWidget(currentValue, pipedriveId){
+  return getSuggestionsWidget("Link To Contact", "person_id", "getPipedrivePersonSuggestions", "buildAddOutsideLendingCard", currentValue, pipedriveId);
 }
 
 function getPipedrivePersonSuggestions(e){
@@ -620,8 +623,8 @@ function getPipedrivePersonSuggestions(e){
   return getSuggestionOptions(searchTerm, searchFunction, mapFunction, "No contacts found matching: "+searchTerm);
 }
 
-function getOrganizationSuggestionWidget(currentValue){
-  return getSuggestionsWidget("Link To Organization", "org_id", "getPipedriveOrganizationSuggestions", "buildAddContactCard", currentValue);
+function getOrganizationSuggestionWidget(currentValue, pipedriveId){
+  return getSuggestionsWidget("Link To Organization", "org_id", "getPipedriveOrganizationSuggestions", "buildAddContactCard", currentValue, pipedriveId);
 }
 
 function getPipedriveOrganizationSuggestions(e){
@@ -657,6 +660,12 @@ function getSuggestionOptions(searchTerm, searchFunction, mapFunction, errorMess
       .build();
 }
 
+/*
+ * Create card for adding new declined deal submission or inquiry
+ *
+ * @param {Even Object} e Optional - for reload
+ * @return {Card} 
+ */
 function buildAddOutsideLendingCard(e){
   var eventData = parseEventObject(e);
   var parameters = eventData["parameters"];
@@ -714,47 +723,4 @@ function buildAddOutsideLendingCard(e){
   card.addSection(section);
 
   return (parameters.reload ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build());
-}
-
-/*
- * Create a new deal based on form input
- *
- * @param {Event Object} e
- * @return {ActionResponse} Pop to last card and display message
- */
-function createNewPipedriveDeal(e){
-  var eventData = parseEventObject(e);
-  var parameters = eventData["parameters"];
-  var formInputs = eventData["formInputs"];
-  
-  var data = {};
-  for(var i in formInputs){
-    var value = formInputs[i];
-    var ltvFieldName = PipedriveAPILibrary.DEAL_FIELDS["ltv"];
-    if(i == ltvFieldName || i == "value"){
-      value = parseFloat(value.match(/(\d|\.+)/g).join(""));
-      
-      if(i == ltvFieldName && value > 1){
-        value = value/100;
-      }
-    }
-    data[i] = value;
-  }
-  var personId = parsePipedriveIdFromSuggestion(parameters["person_id"]);
-  if(personId){
-    // if the parsed string is not all numbers, do not assign a person
-    data["person_id"] = personId;
-  }
-  
-  var ownerId = getPipedriveUserId();
-  if(ownerId){
-    data["user_id"] = ownerId;
-  }
-  var response = PipedriveAPILibrary.createDealFromData(data);
-  
-  var message = (response.success ? "Deal Recorded! - " : "Deal Record Failed  - ")+(data["title"] || "");
-  return CardService.newActionResponseBuilder()
-    .setNavigation(CardService.newNavigation().popCard())
-    .setNotification(CardService.newNotification().setText(message))
-    .build();
 }
