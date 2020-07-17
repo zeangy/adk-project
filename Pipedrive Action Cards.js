@@ -75,7 +75,7 @@ function buildAddContactCard(e){
   var formInput = eventData["formInputs"];
 
   var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader()
-    .setTitle((Object.keys(parameters).length > 0 ? "Update" : "Create")+" Contact")
+    .setTitle((parameters.pipedriveId ? "Update" : "Create")+" Contact")
     .setImageUrl(IMAGES.PIPEDRIVE)
   );
   var section = CardService.newCardSection();

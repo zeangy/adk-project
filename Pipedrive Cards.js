@@ -591,34 +591,34 @@ function getSuggestionsWidget(type, onChangeFunctionName, currentValue, pipedriv
     parameters["pipedriveId"] = pipedriveId;
   }
   var invalidSelection = false;
+  var selectedId = null;
   
   // check that current value is in proper format
   if(currentValue){
-    var selectedId = parsePipedriveIdFromSuggestion(currentValue);
+    selectedId = parsePipedriveIdFromSuggestion(currentValue);
     if(!selectedId){
-      currentValue = null;
       invalidSelection = true;
     }
   }
-  if(currentValue){
+  if(selectedId){
 
     // reset selection if change is clicked
     widget = CardService.newKeyValue()
-      .setContent(currentValue)
+      .setContent("<a href=\"https://neighbourhoodholdings-originations.pipedrive.com/"+type+"/"+selectedId+"\">"+currentValue+"</a>")
       .setTopLabel(title)
       .setButton(CardService.newTextButton()
         .setOnClickAction(CardService.newAction().setFunctionName(onChangeFunctionName).setParameters(parameters))
         .setText("Change"));
   }
   else{
-    widget = CardService.newTextInput()
-      .setTitle(title)
-      .setFieldName(fieldName)
-      .setOnChangeAction(CardService.newAction().setFunctionName(onChangeFunctionName).setParameters(parameters))
-      .setSuggestionsAction(CardService.newAction().setFunctionName("getSuggestionOptions").setParameters({"type":type}));
-    if(invalidSelection){
-      widget.setHint("Invalid option. Please select an option from the suggestions, it must start with a number.");
-    }
+      widget = CardService.newTextInput()
+        .setTitle(title)
+        .setFieldName(fieldName)
+        .setOnChangeAction(CardService.newAction().setFunctionName(onChangeFunctionName).setParameters(parameters))
+        .setSuggestionsAction(CardService.newAction().setFunctionName("getSuggestionOptions").setParameters({"type":type}));
+      if(invalidSelection){
+        widget.setHint("Invalid option. Please select an option from the suggestions, it must start with a number.");
+      }
   }
   return widget;
 }
