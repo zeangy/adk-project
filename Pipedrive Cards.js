@@ -587,17 +587,17 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
  * @param {String} pipedriveId Optional - The pipedrive Id to pass on when form is submitted
  * @return {Widget} Either a text input or key value depending on if current value is a valid selection
  */
-function getSuggestionsWidget(type, onChangeFunctionName, currentValue, pipedriveId){
+function getSuggestionsWidget(type, onChangeFunctionName, currentValue, parameters){
   var map = PIPEDRIVE_SUGGESTION_MAP[type];
   var title = map.title;
   var fieldName = map.fieldName;
   var suggestionFunctionName = map.suggestionFunctionName;
   
   var widget = null;
-  var parameters = {"reload" : "true"};
-  if(pipedriveId){
-    parameters["pipedriveId"] = pipedriveId;
-  }
+  parameters = Object.assign({}, parameters);
+  var reload = parameters.reload;
+  parameters["reload"] = "true";
+  
   var invalidSelection = false;
   var selectedId = null;
   
@@ -608,8 +608,8 @@ function getSuggestionsWidget(type, onChangeFunctionName, currentValue, pipedriv
       invalidSelection = true;
     }
   }
-  if(selectedId){
-
+  if(selectedId && parameters["selected"] != "true"){
+    parameters["selected"] = "true";
     // reset selection if change is clicked
     widget = CardService.newKeyValue()
       .setMultiline(true)//.setIcon(CardService.Icon.PERSON)
@@ -620,24 +620,25 @@ function getSuggestionsWidget(type, onChangeFunctionName, currentValue, pipedriv
         .setText("Change"));
   }
   else{
-      widget = CardService.newTextInput()
-        .setTitle(title)
-        .setFieldName(fieldName)
-        .setOnChangeAction(CardService.newAction().setFunctionName(onChangeFunctionName).setParameters(parameters))
-        .setSuggestionsAction(CardService.newAction().setFunctionName("getSuggestionOptions").setParameters({"type":type}));
-      if(invalidSelection){
-        widget.setHint("Invalid option. Please select an option from the suggestions, it must start with a number.");
-      }
+    parameters["selected"] = "false";
+    widget = CardService.newTextInput()
+      .setTitle(title)
+      .setFieldName(fieldName)
+      .setOnChangeAction(CardService.newAction().setFunctionName(onChangeFunctionName).setParameters(parameters))
+      .setSuggestionsAction(CardService.newAction().setFunctionName("getSuggestionOptions").setParameters({"type":type}));
+    if(invalidSelection){
+      widget.setHint("Invalid option. Please select an option from the suggestions, it must start with a number.");
+    }
   }
   return widget;
 }
 
-function getPersonSuggestionWidget(currentValue, pipedriveId){
-  return getSuggestionsWidget("person", "buildAddOutsideLendingCard", currentValue, pipedriveId);
+function getPersonSuggestionWidget(currentValue, parameters){
+  return getSuggestionsWidget("person", "buildAddOutsideLendingCard", currentValue, parameters);
 }
 
-function getOrganizationSuggestionWidget(currentValue, pipedriveId){
-  return getSuggestionsWidget("organization", "buildAddContactCard", currentValue, pipedriveId);
+function getOrganizationSuggestionWidget(currentValue, parameters){
+  return getSuggestionsWidget("organization", "buildAddContactCard", currentValue, parameters);
 }
 
 /*

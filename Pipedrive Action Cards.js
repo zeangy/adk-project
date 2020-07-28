@@ -80,7 +80,7 @@ function buildAddContactCard(e){
   );
   var section = CardService.newCardSection();
   
-  section.addWidget(getOrganizationSuggestionWidget(parameters.org_id, parameters.pipedriveId));
+  section.addWidget(getOrganizationSuggestionWidget(parameters.org_id, parameters));
   
   var name =  CardService.newTextInput()
     .setFieldName("name")
@@ -252,7 +252,10 @@ function getOwnerIdDropdown(currentUserId){
  * @return {[Widget]} A list of widgets to display, with current values and one spot for new entries
  */
 function getTextWidgetsByParameters(parameters, keyWord){
-
+  // create copy so it doesn't effect other input
+  var updatedParameters = Object.assign({}, parameters);
+  updatedParameters.reload = "true";
+  
   var keys = Object.keys(parameters);
   var widgetDic = {};
   var widgets = [];
@@ -264,11 +267,19 @@ function getTextWidgetsByParameters(parameters, keyWord){
     if(keys[i].indexOf(keyWord) >= 0 &&  keys[i].indexOf("label") <0 && keys[i].indexOf("primary") <0){
       var label = (parameters[keys[i]+"label"] ? " ("+parameters[keys[i]+"label"]+")" : "");
       var primary = (parameters[keys[i]+"primary"] == "true" ? " - PRIMARY" : "");
+      
       var index = parseInt(keys[i].replace(keyWord, ""));
-      var widget = CardService.newTextInput()
-        .setFieldName(keys[i])
-        .setTitle(firstLetterUppercase(keyWord)+" "+(+index+1)+label+primary)
-        .setValue(parameters[keys[i]]);
+      var fieldName = keys[i];
+      var title = firstLetterUppercase(keyWord)+" "+(+index+1)+label+primary;
+      var value = parameters[keys[i]];
+      
+      var widget = CardService.newKeyValue()
+        .setButton(CardService.newTextButton()
+          .setText("Edit")
+          .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(updatedParameters)))
+        .setTopLabel(title)
+        .setContent(value);
+        
       widgetDic[index] = widget;
       count ++;
     }
@@ -293,11 +304,8 @@ function getTextWidgetsByParameters(parameters, keyWord){
       );
     }
   }
-  
-  // create copy so it doesn't effect other input
-  var updatedParameters = Object.assign({}, parameters);
-  // Option to add more
-  updatedParameters.reload = "true";
+ 
+  // Option to add more  
   updatedParameters[paramName] = (numAdd+1).toString();
   widgets.push(CardService.newTextButton()
     .setText("+ Add one more "+keyWord) // email: primary or secondary, phone: work and mobile
