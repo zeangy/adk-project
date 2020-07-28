@@ -257,19 +257,23 @@ function getTextWidgetsByParameters(parameters, keyWord){
   var widgetDic = {};
   var widgets = [];
   var count = 1;
+  var displayList = [];
   
   // get widgets with current values
   for(var i in keys){
-    if(keys[i].indexOf(keyWord) >= 0 ){
+    if(keys[i].indexOf(keyWord) >= 0 &&  keys[i].indexOf("label") <0 && keys[i].indexOf("primary") <0){
+      var label = (parameters[keys[i]+"label"] ? " ("+parameters[keys[i]+"label"]+")" : "");
+      var primary = (parameters[keys[i]+"primary"] == "true" ? " - PRIMARY" : "");
       var index = parseInt(keys[i].replace(keyWord, ""));
       var widget = CardService.newTextInput()
         .setFieldName(keys[i])
-        .setTitle(firstLetterUppercase(keyWord)+" "+(+index+1))
+        .setTitle(firstLetterUppercase(keyWord)+" "+(+index+1)+label+primary)
         .setValue(parameters[keys[i]]);
       widgetDic[index] = widget;
       count ++;
     }
   }
+  
   
   // don't use full keyword because otherwise code above will think it should be displayed
   var paramName = "displayNum"+keyWord.slice(0, 1);
@@ -296,7 +300,7 @@ function getTextWidgetsByParameters(parameters, keyWord){
   updatedParameters.reload = "true";
   updatedParameters[paramName] = (numAdd+1).toString();
   widgets.push(CardService.newTextButton()
-    .setText("+ Add one more "+keyWord)
+    .setText("+ Add one more "+keyWord) // email: primary or secondary, phone: work and mobile
     .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(updatedParameters))
   );
   return widgets;

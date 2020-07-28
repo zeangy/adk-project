@@ -451,12 +451,20 @@ function getUpdateContactParameters(contactDetails){
   if(contactDetails.org_id && contactDetails.org_id.name && contactDetails.org_id.value){
     updateContactParameters["org_id"] = contactDetails.org_id.value.toString()+" - "+contactDetails.org_id.name;
   }
-  for(var i in contactDetails.email){
-    updateContactParameters["email"+i] = contactDetails.email[i].value;
+  
+  var keyWords = ["email", "phone"];
+  
+  for(var key in keyWords){
+    var keyWord = keyWords[key];
+    for(var i in contactDetails[keyWord]){
+      var currDetail = contactDetails[keyWord][i];
+      
+      updateContactParameters[keyWord+i] = (currDetail.value || "");
+      updateContactParameters[keyWord+i+"label"] = (currDetail.label || "");
+      updateContactParameters[keyWord+i+"primary"] = (currDetail.primary || "").toString();
+    }
   }
-  for(var i in contactDetails.phone){
-    updateContactParameters["phone"+i] = contactDetails.phone[i].value;
-  }
+  
   return updateContactParameters;
 }
 
@@ -604,6 +612,7 @@ function getSuggestionsWidget(type, onChangeFunctionName, currentValue, pipedriv
 
     // reset selection if change is clicked
     widget = CardService.newKeyValue()
+      .setMultiline(true)//.setIcon(CardService.Icon.PERSON)
       .setContent("<a href=\"https://neighbourhoodholdings-originations.pipedrive.com/"+type+"/"+selectedId+"\">"+currentValue+"</a>")
       .setTopLabel(title)
       .setButton(CardService.newTextButton()

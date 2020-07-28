@@ -138,14 +138,14 @@ var PIPEDRIVE_SUGGESTION_MAP = {
   "organization" : {
     "title" : "Link To Organization", 
     "fieldName" : "org_id", 
-    "mapFunction" : function(x){return x.id+" - "+x.name+(x.organization && x.organization.name ? " @ "+x.organization.name : "");},
+    "mapFunction" : function(x){return x.id+" - "+x.name;},
     "searchFunction" : PipedriveAPILibrary.searchOrganizations,
     "errorMessage" : "No organizations found matching: "
   },
   "person" : {
     "title" : "Link To Contact", 
     "fieldName" : "person_id", 
-    "mapFunction" : function(x){return x.id+" - "+x.name;},
+    "mapFunction" : function(x){return x.id+" - "+x.name+(x.organization && x.organization.name ? " @ "+x.organization.name : "");},
     "searchFunction" : PipedriveAPILibrary.searchPersons,
     "errorMessage" : "No contacts found matching: "
   }
