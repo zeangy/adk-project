@@ -137,6 +137,12 @@ function buildAddContactCard(e){
   return (parameters.reload ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build()); 
 }
 
+/*
+ * Update or add contact in pipedrive
+ *
+ * @param {Event Object} e
+ * @return {Action Response}
+ */
 function addPipedriveContact(e){
   var eventData = parseEventObject(e);
   var parameters = eventData["parameters"];

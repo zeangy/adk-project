@@ -160,7 +160,7 @@ function getMergeSection(updateContactParameters){
 
   var mergeResultSection = CardService.newCardSection();
   var keys = Object.keys(updateContactParameters);
-  var search = keys.filter(function(x){return ((x.indexOf("name") >= 0 || x.indexOf("email") >= 0 || x.indexOf("phone") >= 0) && updateContactParameters[x].length > 2);});
+  var search = keys.filter(function(x){return ((x.indexOf("name") >= 0 || matchKeyWord(x)) && updateContactParameters[x].length > 2);});
   var matchDetails = {};
   
   for(var i in search){
@@ -185,8 +185,8 @@ function getMergeSection(updateContactParameters){
           widget.setButton(CardService.newTextButton()
             .setText("Merge")
               .setOnClickAction(CardService.newAction()
-                .setFunctionName("mergePersonsCard")
-                .setParameters(mergeParameters)));
+                .setFunctionName("buildAddContactCard")
+                .setParameters(updateContactParameters)));
           
           // probably has lendesk id
           if(currentContact.custom_fields.filter(function(x){return x.length > 35;}).length > 0){

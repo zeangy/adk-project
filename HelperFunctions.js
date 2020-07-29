@@ -229,6 +229,12 @@ function parsePipedriveIdFromSuggestion(value){
   return value;
 }
 
+/*
+ * Extract key word from field name with number
+ *
+ * @param {String} matchString The name ending with a number (e.g. email0)
+ * @return {String} The key word part of the string (e.g. email)
+ */
 function matchKeyWord(matchString){
   var match = null;
   var keyWords = ["phone", "email"];
