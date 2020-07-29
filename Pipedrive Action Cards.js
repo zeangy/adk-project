@@ -290,12 +290,13 @@ function getTextWidgetsByParameters(parameters, keyWord){
   var keys = Object.keys(parameters);
   var widgetDic = {};
   var widgets = [];
-  var count = 1;
+  var count = 0;
   var displayList = [];
-    
+  var keyWordMatch = new RegExp(keyWord+"[0-9]*$"); 
+  
   // get widgets with current values
   for(var i in keys){
-    if(keys[i].indexOf(keyWord) >= 0 &&  keys[i].indexOf("label") <0 && keys[i].indexOf("primary") <0 && keys[i].indexOf("edit") <0){
+    if(keys[i].match(keyWordMatch)){
       var label = (parameters[keys[i]+"label"] ? " ("+parameters[keys[i]+"label"]+")" : "");
       var primary = (parameters[keys[i]+"primary"] == "true" ? " - PRIMARY" : "");
       
@@ -305,7 +306,7 @@ function getTextWidgetsByParameters(parameters, keyWord){
       var value = parameters[keys[i]];
       
       if(parameters[fieldName+"edit"] == "true"){
-        widgets = widgets.concat(getEditPhoneEmailWidget(fieldName, title, value, label, primary, parameters));
+        widgetDic[index] = getEditPhoneEmailWidget(fieldName, title, value, label, primary, parameters);
       }
       else{
         var editParameters = {};
@@ -317,14 +318,20 @@ function getTextWidgetsByParameters(parameters, keyWord){
             .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(editParameters)))
           .setTopLabel(title)
           .setContent(value);
-        widgets.push(widget);
+        widgetDic[index] = [widget];
       }
       count ++;
     }
   }
+  for (var i = 0; i < count; i++){
+    for (var j in widgetDic[i]){
+      widgets.push(widgetDic[i][j]);
+    }
+  }
   
   var addNewParameters = {};
-  addNewParameters[keyWord+(+count-1)] = " ";
+  addNewParameters[keyWord+count] = " ";
+  addNewParameters[keyWord+count+"edit"] = "true";
   addNewParameters = Object.assign(addNewParameters, updatedParameters);
   
   widgets.push(CardService.newTextButton()
