@@ -228,3 +228,16 @@ function parsePipedriveIdFromSuggestion(value){
   }
   return value;
 }
+
+function matchKeyWord(matchString){
+  var match = null;
+  var keyWords = ["phone", "email"];
+  for(var i in keyWords){
+    var reg = new RegExp("("+keyWords[i]+")[0-9]*$");
+    var matchArray = matchString.match(reg);
+    if(matchArray){
+      match = matchArray[1];
+    }
+  }
+  return match;
+}

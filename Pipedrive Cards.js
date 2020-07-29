@@ -491,8 +491,7 @@ function buildPipedrivePersonDetailsCard(e, message, actionResponseBoolean) {
 
   var updateContactParameters = getUpdateContactParameters(contactDetails);
   var updateContactButton = CardService.newTextButton()
-    .setText("Edit")
-    .setDisabled(true)    
+    .setText("Edit")   
     .setOnClickAction(CardService.newAction()
       .setFunctionName("buildAddContactCard")
       .setParameters(updateContactParameters)

@@ -146,14 +146,18 @@ function addPipedriveContact(e){
   };
   for(var i in formInput){
     var currentValue = formInput[i];
-    if(i.indexOf("email") >= 0){
-      parsedFormInput["email"].push({"value" : currentValue});
-    }
-    else if(i.indexOf("phone") >= 0){
-      parsedFormInput["phone"].push({"value" : currentValue});
-    }
-    else{
-      parsedFormInput[i] = currentValue;
+    parsedFormInput[i] = currentValue;
+  }
+  
+  for(var i in parameters){
+    var keyFullString = i;
+    var keyWord = matchKeyWord(keyFullString);
+    if(keyWord){
+      parsedFormInput[keyWord].push({
+        "value" : parameters[keyFullString], 
+        "label" : (parameters[keyFullString+"label"] || ""), 
+        "primary" : (parameters[keyFullString+"primary"] || "")
+      });
     }
   }
   
@@ -292,11 +296,10 @@ function getTextWidgetsByParameters(parameters, keyWord){
   var widgets = [];
   var count = 0;
   var displayList = [];
-  var keyWordMatch = new RegExp(keyWord+"[0-9]*$"); 
   
   // get widgets with current values
   for(var i in keys){
-    if(keys[i].match(keyWordMatch)){
+    if(matchKeyWord(keys[i])){
       var label = (parameters[keys[i]+"label"] ? " ("+parameters[keys[i]+"label"]+")" : "");
       var primary = (parameters[keys[i]+"primary"] == "true" ? " - PRIMARY" : "");
       
