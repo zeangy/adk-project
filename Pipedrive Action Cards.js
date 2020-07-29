@@ -248,28 +248,48 @@ function getOwnerIdDropdown(currentUserId){
   return widget;
 }
 
+
+function getPhoneTypeOptions(){
+  return ["work", "home", "mobile"];
+}
+function getEmailTypeOptions(){
+  return ["work", "home"];
+}
 function getEditPhoneEmailWidget(fieldName, title, value, label, primary, parameters){
   var widgets = [];
+  
   widgets.push(CardService.newTextInput()
         .setFieldName(fieldName)
         .setValue(value)
         .setTitle(title));
+        
+  // email: primary or secondary, phone: work and mobile
+  var labelOptions = getPhoneTypeOptions();
   
-  var labelOptions = ["work","home"];
   var labelSelectionWidget = CardService.newSelectionInput()
     .setFieldName(fieldName+"label")
     .setType(CardService.SelectionInputType.DROPDOWN)
     .setTitle("Type");
+    
   for(var i in labelOptions){
     labelSelectionWidget.addItem(labelOptions[i], labelOptions[i], label == labelOptions[i]);
   }
+  
   widgets.push(labelSelectionWidget);
   
-  var editParams = Object.assign({}, parameters);
-  editParams[fieldName+"edit"] = "false";
-  widgets.push(CardService.newTextButton()
-    .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(editParams))
-    .setText("Save"));
+  var editParameters = Object.assign({}, parameters);
+  editParameters[fieldName+"edit"] = "false";
+  var editButton = CardService.newTextButton()
+    .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(editParameters))
+    .setText("Save");
+    
+  var deleteParameters = Object.assign({}, parameters);
+  deleteParameters[fieldName+"delete"] = "true";  
+  var deleteButton = CardService.newTextButton()
+    .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(deleteParameters))
+    .setText("Delete");
+    
+  widgets.push(CardService.newButtonSet().addButton(editButton).addButton(deleteButton));
  /*
   widgets.push(CardService.newSelectionInput()
     .setFieldName(fieldName+"label")
@@ -299,22 +319,23 @@ function getTextWidgetsByParameters(parameters, keyWord){
   
   // get widgets with current values
   for(var i in keys){
-    if(matchKeyWord(keys[i])){
-      var label = (parameters[keys[i]+"label"] ? " ("+parameters[keys[i]+"label"]+")" : "");
-      var primary = (parameters[keys[i]+"primary"] == "true" ? " - PRIMARY" : "");
+    if(matchKeyWord(keys[i]) == keyWord){
+      var label = (parameters[keys[i]+"label"] || "");
+      var primary = (parameters[keys[i]+"primary"] || "");
       
       var index = parseInt(keys[i].replace(keyWord, ""));
       var fieldName = keys[i];
-      var title = firstLetterUppercase(keyWord)+" "+(+index+1)+label+primary;
+      var title = firstLetterUppercase(keyWord)+" "+(label ? " ("+label+")" : "")+(primary == "true" ? " - PRIMARY" : "");
       var value = parameters[keys[i]];
-      
-      if(parameters[fieldName+"edit"] == "true"){
+      if(parameters[fieldName+"delete"] == "true"){
+        // don't display
+      }
+      else if(parameters[fieldName+"edit"] == "true"){
         widgetDic[index] = getEditPhoneEmailWidget(fieldName, title, value, label, primary, parameters);
       }
       else{
-        var editParameters = {};
+        var editParameters = Object.assign({}, updatedParameters);
         editParameters[fieldName+"edit"] = "true";
-        editParameters = Object.assign(editParameters, updatedParameters);
         var widget = CardService.newKeyValue()
           .setButton(CardService.newTextButton()
             .setText("Edit")
@@ -332,13 +353,12 @@ function getTextWidgetsByParameters(parameters, keyWord){
     }
   }
   
-  var addNewParameters = {};
+  var addNewParameters = Object.assign({}, updatedParameters);
   addNewParameters[keyWord+count] = " ";
   addNewParameters[keyWord+count+"edit"] = "true";
-  addNewParameters = Object.assign(addNewParameters, updatedParameters);
   
   widgets.push(CardService.newTextButton()
-    .setText("+ Add new "+keyWord) // email: primary or secondary, phone: work and mobile
+    .setText("+ Add new "+keyWord) 
     .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(addNewParameters))
   );
   return widgets;
