@@ -73,7 +73,9 @@ function buildAddContactCard(e){
   var eventData = parseEventObject(e);
   var parameters = eventData["parameters"];
   var formInput = eventData["formInputs"];
-
+  
+  parameters = updatePrimary(parameters, formInput); 
+  
   var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader()
     .setTitle((parameters.pipedriveId ? "Update" : "Create")+" Contact")
     .setImageUrl(IMAGES.PIPEDRIVE)
@@ -152,11 +154,11 @@ function addPipedriveContact(e){
   for(var i in parameters){
     var keyFullString = i;
     var keyWord = matchKeyWord(keyFullString);
-    if(keyWord){
+    if(keyWord && parameters[keyFullString+"delete"] != "true"){
       parsedFormInput[keyWord].push({
-        "value" : parameters[keyFullString], 
+        "value" : parameters[keyFullString].trim(), 
         "label" : (parameters[keyFullString+"label"] || ""), 
-        "primary" : (parameters[keyFullString+"primary"] || "")
+        "primary" : (parameters[keyFullString+"primary"] == "true" ? true : false)
       });
     }
   }
@@ -248,34 +250,44 @@ function getOwnerIdDropdown(currentUserId){
   return widget;
 }
 
+function updatePrimary(parameters, formInput){
+  var newPrimary = formInput["newPrimary"];
+  if(newPrimary){
+    var keyWord = matchKeyWord(newPrimary.replace("primary", ""));
+    for(var i in parameters){
+      if(i.indexOf(keyWord) >= 0 && i.indexOf("primary") >= 0){
+        parameters[i] = "false";
+      }
+    }
+    parameters[newPrimary] = "true";
+  }
+  return parameters;
+}
 
-function getPhoneTypeOptions(){
-  return ["work", "home", "mobile"];
-}
-function getEmailTypeOptions(){
-  return ["work", "home"];
-}
 function getEditPhoneEmailWidget(fieldName, title, value, label, primary, parameters){
   var widgets = [];
+
+  var emailTextInput = CardService.newTextInput()
+    .setFieldName(fieldName)
+    .setValue(value)
+    .setTitle(title);
+    
+  var primarySelection = CardService.newSelectionInput()
+    .setFieldName("newPrimary")
+    .setType(CardService.SelectionInputType.CHECK_BOX)
+    .addItem("Set As Primary", fieldName+"primary", primary == "true");
   
-  widgets.push(CardService.newTextInput()
-        .setFieldName(fieldName)
-        .setValue(value)
-        .setTitle(title));
-        
   // email: primary or secondary, phone: work and mobile
-  var labelOptions = getPhoneTypeOptions();
+  var labelOptions = (fieldName.indexOf("phone") >= 0 ? ["work", "home", "mobile", "other"] : ["work", "home", "other"]);
   
   var labelSelectionWidget = CardService.newSelectionInput()
     .setFieldName(fieldName+"label")
-    .setType(CardService.SelectionInputType.DROPDOWN)
+    .setType(CardService.SelectionInputType.RADIO_BUTTON)
     .setTitle("Type");
     
   for(var i in labelOptions){
     labelSelectionWidget.addItem(labelOptions[i], labelOptions[i], label == labelOptions[i]);
   }
-  
-  widgets.push(labelSelectionWidget);
   
   var editParameters = Object.assign({}, parameters);
   editParameters[fieldName+"edit"] = "false";
@@ -289,14 +301,12 @@ function getEditPhoneEmailWidget(fieldName, title, value, label, primary, parame
     .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(deleteParameters))
     .setText("Delete");
     
-  widgets.push(CardService.newButtonSet().addButton(editButton).addButton(deleteButton));
- /*
-  widgets.push(CardService.newSelectionInput()
-    .setFieldName(fieldName+"label")
-    .setType(CardService.SelectionInputType.CHECK_BOX)
-    .setTitle("Primary?")
-   );
-   */
+  var buttonSet = CardService.newButtonSet().addButton(editButton).addButton(deleteButton);
+  widgets.push(emailTextInput);
+  widgets.push(labelSelectionWidget);
+  widgets.push(primarySelection);
+  widgets.push(buttonSet);
+  
    return widgets;
 }
 /* 
@@ -336,10 +346,13 @@ function getTextWidgetsByParameters(parameters, keyWord){
       else{
         var editParameters = Object.assign({}, updatedParameters);
         editParameters[fieldName+"edit"] = "true";
+        var editAction = CardService.newAction().setFunctionName("buildAddContactCard").setParameters(editParameters);
+        
         var widget = CardService.newKeyValue()
           .setButton(CardService.newTextButton()
             .setText("Edit")
-            .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(editParameters)))
+            .setOnClickAction(editAction))
+          .setIcon((keyWord == "email" ? CardService.Icon.EMAIL : CardService.Icon.PHONE))
           .setTopLabel(title)
           .setContent(value);
         widgetDic[index] = [widget];
@@ -358,7 +371,7 @@ function getTextWidgetsByParameters(parameters, keyWord){
   addNewParameters[keyWord+count+"edit"] = "true";
   
   widgets.push(CardService.newTextButton()
-    .setText("+ Add new "+keyWord) 
+    .setText("+ Add new "+keyWord)
     .setOnClickAction(CardService.newAction().setFunctionName("buildAddContactCard").setParameters(addNewParameters))
   );
   return widgets;
