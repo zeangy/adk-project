@@ -264,7 +264,18 @@ function updatePrimary(parameters, formInput){
   return parameters;
 }
 
-function getEditPhoneEmailWidget(fieldName, title, value, label, primary, parameters){
+/* 
+ * Create phone / email selection input widgets
+ *
+ * @param {String} fieldName The name of the field (e.g. email0)
+ * @param {String} title The title to display for the text input
+ * @param {String} value The curent email/phone value
+ * @param {String} label The current type (work, home, etc)
+ * @param {String} primary Whether the current value is primary or not
+ * @param {{}} parameters The parameters
+ * @return {[Widget]} A text input and selection input widgets to display
+ */
+function getEditPhoneEmailInputWidgets(fieldName, title, value, label, primary, parameters){
   var widgets = [];
 
   var emailTextInput = CardService.newTextInput()
@@ -277,7 +288,6 @@ function getEditPhoneEmailWidget(fieldName, title, value, label, primary, parame
     .setType(CardService.SelectionInputType.CHECK_BOX)
     .addItem("Set As Primary", fieldName+"primary", primary == "true");
   
-  // email: primary or secondary, phone: work and mobile
   var labelOptions = (fieldName.indexOf("phone") >= 0 ? ["work", "home", "mobile", "other"] : ["work", "home", "other"]);
   
   var labelSelectionWidget = CardService.newSelectionInput()
@@ -307,8 +317,35 @@ function getEditPhoneEmailWidget(fieldName, title, value, label, primary, parame
   widgets.push(primarySelection);
   widgets.push(buttonSet);
   
-   return widgets;
+  return widgets;
 }
+
+/* 
+ * Create phone / email selection input widgets
+ *
+ * @param {String} fieldName The name of the field (e.g. email0)
+ * @param {String} title The title to display for the text input
+ * @param {String} value The curent email/phone value
+ * @param {String} type The type (phone or email)
+ * @param {{}} parameters The parameters
+ * @return {Widget} A key value widget to display
+ */
+function getEditPhoneEmailDisplayWidget(fieldName, title, value, type, parameters){
+  var editParameters = Object.assign({}, parameters);
+  editParameters[fieldName+"edit"] = "true";
+  var editAction = CardService.newAction().setFunctionName("buildAddContactCard").setParameters(editParameters);
+  
+  var widget = CardService.newKeyValue()
+    .setButton(CardService.newTextButton()
+      .setText("Edit")
+      .setOnClickAction(editAction))
+    .setIcon((type == "email" ? CardService.Icon.EMAIL : CardService.Icon.PHONE))
+    .setTopLabel(title)
+    .setContent(value);
+    
+  return widget;
+}
+
 /* 
  * Populate a list of widgets for phone or email address text inputs with values if given in parameters
  *
@@ -341,21 +378,10 @@ function getTextWidgetsByParameters(parameters, keyWord){
         // don't display
       }
       else if(parameters[fieldName+"edit"] == "true"){
-        widgetDic[index] = getEditPhoneEmailWidget(fieldName, title, value, label, primary, parameters);
+        widgetDic[index] = getEditPhoneEmailInputWidgets(fieldName, title, value, label, primary, parameters);
       }
       else{
-        var editParameters = Object.assign({}, updatedParameters);
-        editParameters[fieldName+"edit"] = "true";
-        var editAction = CardService.newAction().setFunctionName("buildAddContactCard").setParameters(editParameters);
-        
-        var widget = CardService.newKeyValue()
-          .setButton(CardService.newTextButton()
-            .setText("Edit")
-            .setOnClickAction(editAction))
-          .setIcon((keyWord == "email" ? CardService.Icon.EMAIL : CardService.Icon.PHONE))
-          .setTopLabel(title)
-          .setContent(value);
-        widgetDic[index] = [widget];
+        widgetDic[index] = [getEditPhoneEmailDisplayWidget(fieldName, title, value, keyWord, updatedParameters)];
       }
       count ++;
     }
