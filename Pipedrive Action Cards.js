@@ -82,7 +82,7 @@ function buildAddContactCard(e){
   );
   var section = CardService.newCardSection();
   
-  section.addWidget(getOrganizationSuggestionWidget(parameters.org_id, parameters));
+  section.addWidget(getOrganizationSuggestionWidget(parameters.org_id, "buildAddContactCard", parameters));
   
   var name =  CardService.newTextInput()
     .setFieldName("name")
@@ -473,7 +473,9 @@ function buildAddPipedriveNotesCard(e){
  * @returns {ActionResponse}
  */
 function buildAddPipedriveActivitiesCard(e){
+
   var parameters = e.commonEventObject.parameters;
+  
   var pipedriveId = parameters.pipedriveId;
   var title = (parameters.title || "Add New Activity");
   var subtitle = (parameters.subtitle || "");
@@ -492,7 +494,8 @@ function buildAddPipedriveActivitiesCard(e){
   var fontColour = userDetails.colour;
   
   var addActivitySection = CardService.newCardSection();
-  
+  //var formInputs = parseFormInputs(e);
+  //addActivitySection.addWidget(getPersonSuggestionWidget((formInputs["person_id"] ? formInputs["person_id"] : pipedriveId+" - "+name), "buildAddPipedriveActivitiesCard", parameters));
   addActivitySection.addWidget(CardService.newKeyValue()
     .setTopLabel(firstLetterUppercase(activityType)+" Linked To")
     .setContent(name)
@@ -560,12 +563,13 @@ function buildAddPipedriveActivitiesCard(e){
   var displayActivitySection = pipedriveActivityDisplaySection(pipedriveId);
   card.addSection(displayActivitySection);
   
+  /*
   var actionResponse = CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation()
        .pushCard(card.build()))
     .build();
-    
-  return actionResponse;
+    */
+  return (parameters.reload ? CardService.newActionResponseBuilder().setNavigation(CardService.newNavigation().updateCard(card.build())).build() : card.build()); 
 }
 
 /*

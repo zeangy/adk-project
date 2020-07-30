@@ -635,12 +635,12 @@ function getSuggestionsWidget(type, onChangeFunctionName, currentValue, paramete
   return widget;
 }
 
-function getPersonSuggestionWidget(currentValue, parameters){
-  return getSuggestionsWidget("person", "buildAddOutsideLendingCard", currentValue, parameters);
+function getPersonSuggestionWidget(currentValue, onChangeFunction, parameters){
+  return getSuggestionsWidget("person", onChangeFunction, currentValue, parameters);
 }
 
-function getOrganizationSuggestionWidget(currentValue, parameters){
-  return getSuggestionsWidget("organization", "buildAddContactCard", currentValue, parameters);
+function getOrganizationSuggestionWidget(currentValue, onChangeFunction, parameters){
+  return getSuggestionsWidget("organization", onChangeFunction, currentValue, parameters);
 }
 
 /*
@@ -693,7 +693,7 @@ function buildAddOutsideLendingCard(e){
   
   var customFieldOptions = PipedriveAPILibrary.getDealCustomFieldOptionsByName();
   
-  section.addWidget(getPersonSuggestionWidget(parameters.person_id));
+  section.addWidget(getPersonSuggestionWidget(parameters.person_id, "buildAddOutsideLendingCard"));
   
   section.addWidget(CardService.newTextInput()
     .setFieldName("title")
