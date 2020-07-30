@@ -114,6 +114,10 @@ function buildAddContactCard(e){
     "province" : {
       "dic" : customFieldOptions["Province"],
       "selectionType" : CardService.SelectionInputType.CHECK_BOX
+     },
+    "primaryBusiness" : {
+      "dic" : customFieldOptions["Primary Business"],
+      "selectionType" : CardService.SelectionInputType.CHECK_BOX
      }
   };
   
@@ -124,6 +128,11 @@ function buildAddContactCard(e){
     section.addWidget(selectionWidget);
   }
   
+  section.addWidget(CardService.newTextInput()
+    .setTitle("Years' of Experience")
+    .setFieldName(customFieldOptions["Years' of Experience"]["key"])
+    .setValue((parameters["yearsExperience"] || "")));
+    
   var submitSection = CardService.newCardSection();
   var submitButton = CardService.newTextButton()
     .setText("Submit")

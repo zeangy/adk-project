@@ -446,6 +446,8 @@ function getUpdateContactParameters(contactDetails){
     "tag" : (contactDetails.tag || ""),
     "province" : (contactDetails.province || ""),
     "pipedriveId" : (contactDetails.id || "").toString(),
+    "yearsExperience" : (contactDetails.yearsExperience || "").toString(),
+    "primaryBusiness" : (contactDetails.primaryBusiness || ""),
     "ownerId" : (contactDetails.owner_id && contactDetails.owner_id.id ? contactDetails.owner_id.id.toString() : ""),
   };
   if(contactDetails.org_id && contactDetails.org_id.name && contactDetails.org_id.value){
