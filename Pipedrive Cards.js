@@ -133,7 +133,7 @@ function getPersonKeyValue(currentContact){
   var contactOrganizationAddress = "N/A";
   var organizationId = "";
   
-  if (currentContact.organization){
+  if(currentContact.organization){
     contactOrganizationName = currentContact.organization.name;
     contactOrganizationAddress = currentContact.organization.address;
     organizationId = currentContact.organization.id.toString();
@@ -180,13 +180,16 @@ function getMergeSection(updateContactParameters){
             "mergeWithName" : updateContactParameters.name,
             "ownerId" : updateContactParameters.ownerId,
             "deleteId" : currentContact.id.toString(),
-            "deleteName" : currentContact.name
+            "deleteName" : currentContact.name,
+            "deleteOrg" : parseOrgId(currentContact.organization),
           };
-          widget.setButton(CardService.newTextButton()
+          var mergeButton = CardService.newTextButton()
             .setText("Merge")
               .setOnClickAction(CardService.newAction()
-                .setFunctionName("buildAddContactCard")
-                .setParameters(updateContactParameters)));
+                .setFunctionName("mergePersonsCard")
+                .setParameters(Object.assign(updateContactParameters, mergeParameters)));
+
+          widget.setButton(mergeButton);
           
           // probably has lendesk id
           if(currentContact.custom_fields.filter(function(x){return x.length > 35;}).length > 0){
@@ -450,8 +453,9 @@ function getUpdateContactParameters(contactDetails){
     "primaryBusiness" : (contactDetails.primaryBusiness || ""),
     "ownerId" : (contactDetails.owner_id && contactDetails.owner_id.id ? contactDetails.owner_id.id.toString() : ""),
   };
-  if(contactDetails.org_id && contactDetails.org_id.name && contactDetails.org_id.value){
-    updateContactParameters["org_id"] = contactDetails.org_id.value.toString()+" - "+contactDetails.org_id.name;
+  var organization = parseOrgId(contactDetails.org_id);
+  if(organization){
+    updateContactParameters["org_id"] = organization;
   }
   
   var keyWords = ["email", "phone"];

@@ -63,6 +63,18 @@ function addPipedriveActivity(e){
   
 }
 
+function getOrganizationMergeWidget(mergeOrg, deleteOrg){
+  var map = PIPEDRIVE_SUGGESTION_MAP["organization"];
+  var  widget = CardService.newSelectionInput()
+        .setTitle(map.title)
+        .setFieldName(map.fieldName)
+        .setType(CardService.SelectionInputType.RADIO_BUTTON)
+        .addItem((mergeOrg || "No Organization"),mergeOrg, true)
+        .addItem((deleteOrg || "No Organization"), deleteOrg, false);
+        
+  return widget;
+}
+
 /*
  * Create card to update exising contact or add a new contact in Pipedrive
  *
@@ -74,20 +86,39 @@ function buildAddContactCard(e){
   var parameters = eventData["parameters"];
   var formInput = eventData["formInputs"];
   
+  var isMerge = parameters.mergeWithId;
+  
+  var title = (isMerge ? "Merge "+parameters.deleteName+" with "+parameters.mergeWithName : (parameters.pipedriveId ? "Update" : "Create")+" Contact");
+  var subtitle = (isMerge ? "Delete "+parameters.deleteId+", Update "+parameters.mergeWithId : "");
+  
   parameters = updatePrimary(parameters, formInput); 
   
   var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader()
-    .setTitle((parameters.pipedriveId ? "Update" : "Create")+" Contact")
+    .setTitle(title)
+    .setSubtitle(subtitle)
     .setImageUrl(IMAGES.PIPEDRIVE)
   );
   var section = CardService.newCardSection();
   
-  section.addWidget(getOrganizationSuggestionWidget(parameters.org_id, "buildAddContactCard", parameters));
+  // if organizations are the same, show regular widget
+  var deleteOrg = parameters.deleteOrg;
+  
+  if(!deleteOrg || parameters.org_id == deleteOrg){
+    section.addWidget(getOrganizationSuggestionWidget(parameters.org_id, "buildAddContactCard", parameters));
+  }
+  else{
+    section.addWidget(getOrganizationMergeWidget(parameters.org_id, parameters.deleteOrg));
+  }
   
   var name =  CardService.newTextInput()
     .setFieldName("name")
     .setTitle("Full Name")
     .setValue((parameters.name || ""));
+  
+  if(isMerge){
+    name.setHint((parameters.deleteName || ""));
+  }
+  
   section.addWidget(name);
   
   var emailWidgets = getTextWidgetsByParameters(parameters, "email");
@@ -156,7 +187,7 @@ function addPipedriveContact(e){
   var eventData = parseEventObject(e);
   var parameters = eventData["parameters"];
   var formInput = eventData["formInputs"];
-  
+
   var parsedFormInput = {
     "email" : [],
     "phone" : []
@@ -165,7 +196,7 @@ function addPipedriveContact(e){
     var currentValue = formInput[i];
     parsedFormInput[i] = currentValue;
   }
-  
+
   for(var i in parameters){
     var keyFullString = i;
     var keyWord = matchKeyWord(keyFullString);
@@ -178,19 +209,31 @@ function addPipedriveContact(e){
     }
   }
   
-  var orgId = parsePipedriveIdFromSuggestion(parameters["org_id"]);
+  var orgId = parsePipedriveIdFromSuggestion((formInput["org_id"] || parameters["org_id"]));
+  
   // if the parsed string is not numeric, do not assign an organization
   if(orgId){
     parsedFormInput["org_id"] = orgId;
   }
 
-  var message = " Contact!";
+  var message = "";
   var response = {"success": false};
+
+  if(parameters.mergeWithId && parameters.deleteId){
+    var mergeResponse = PipedriveAPILibrary.mergePersons(parameters.mergeWithId, parameters.deleteId);
+    if(mergeResponse.success){
+      message = "Merged and ";
+      e.commonEventObject.parameters["pipedriveId"] = parameters.mergeWithId;
+    }
+    else{
+      message = "Merge Failed. ";
+    }
+  }
   
   // update
   if(parameters.pipedriveId){
     response = PipedriveAPILibrary.updatePersonFromData(parsedFormInput, parameters.pipedriveId);
-    message = "Updated"+message;
+    message = message+"Updated Contact!";
   }
   // create
   else {
@@ -204,9 +247,9 @@ function addPipedriveContact(e){
     if(response && response.data && response.data.id){
       e.commonEventObject.parameters["pipedriveId"] = response.data.id.toString();
     }
-    message = "Created"+message;
+    message = message+"Created Contact!";
   }  
-
+  
   var actionResponse = CardService.newActionResponseBuilder();
   if(e.commonEventObject.parameters["pipedriveId"] && response.success){
     actionResponse.setNavigation(CardService.newNavigation()
@@ -598,13 +641,12 @@ function mergePersonsCard(e){
   section.addWidget(CardService.newTextParagraph().setText("<a href='https://neighbourhoodholdings-originations.pipedrive.com/person/"+mergeWithId+"'>Person 1 Page</a>"));
   section.addWidget(CardService.newTextParagraph().setText("<a href='https://neighbourhoodholdings-originations.pipedrive.com/person/"+deleteId+"'>Person 2 Page</a>"));
   card.addSection(section);
-  
   var actionResponse = CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation()
        .pushCard(card.build()))
     .build();
     
-  return actionResponse;
+  return buildAddContactCard(e);
 }
 
 /*

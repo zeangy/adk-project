@@ -2,14 +2,14 @@
   "timeZone": "America/Los_Angeles",
   "dependencies": {
     "libraries": [{
-      "userSymbol": "PipedriveAPILibrary",
-      "libraryId": "1RYwLwy2DopT0FXSKz1GqcJFDrNhxWv3P_TZYUuYaOay_dkjU0p4oVBjr",
-      "version": "17",
-      "developmentMode": true
-    }, {
       "userSymbol": "LendeskAPILibrary",
       "libraryId": "1vQVldPNzgY24feNNiQmu7t8OsUI4N0DBCW00hrgKrzT_xzJojRfpV90M",
       "version": "83",
+      "developmentMode": true
+    }, {
+      "userSymbol": "PipedriveAPILibrary",
+      "libraryId": "1RYwLwy2DopT0FXSKz1GqcJFDrNhxWv3P_TZYUuYaOay_dkjU0p4oVBjr",
+      "version": "19",
       "developmentMode": true
     }]
   },

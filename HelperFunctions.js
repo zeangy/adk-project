@@ -247,3 +247,20 @@ function matchKeyWord(matchString){
   }
   return match;
 }
+
+function parseOrgId(organizationObject){
+  var string = "";
+  if(organizationObject && organizationObject.name){
+    var name = organizationObject.name;
+    var id = "";
+    if(organizationObject.value){
+      id = organizationObject.value;
+    }
+    if(organizationObject.id){
+      id = organizationObject.id;
+    }
+    string = id.toString()+" -  "+name;
+  }
+  
+  return string;
+}
