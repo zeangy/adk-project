@@ -442,6 +442,64 @@ function pipedriveDealDisplaySection(dealDetails, limit, otherWidgets){
   return section;
 }
 
+/*
+ * Combine details of contacts to merge
+ *
+ * @param {String} primaryContactId The Id of the contact to be merged with
+ * @param {String} secondaryContactId The Id of the contact to be deleted
+ * @return {JSON} The relevant details in JSON
+ */
+function combineContactParameters(primaryContactId, secondaryContactId){
+
+  var primaryContact = PipedriveAPILibrary.getPersonDetails(primaryContactId);
+  var secondaryContact = PipedriveAPILibrary.getPersonDetails(secondaryContactId);
+  var contactDetails = primaryContact;
+  var joinKeys = ["tag", "province", "primaryBusiness"];
+  var combineKeys = ["email", "phone"];
+  for(var i in primaryContact){
+    if(joinKeys.indexOf(i) >= 0){
+      contactDetails[i] = primaryContact[i].split(", ").concat(secondaryContact[i].split(", ")).join();
+    }
+    if(combineKeys.indexOf(i) >= 0){
+      secondaryContact[i].forEach(function(x){x.primary = false;});
+      var arr = primaryContact[i].concat(secondaryContact[i]);
+      var valueMap = arr.map(function(x){return x.value;});
+      contactDetails[i] = arr.filter(function(item, index){return item.value != "" && valueMap.indexOf(item.value) == index;});
+    }
+  }
+  
+  var parsedParams = getUpdateContactParameters(contactDetails);
+  parsedParams["mergeWithId"] = primaryContactId;
+  parsedParams["deleteId"] = secondaryContactId;
+
+  return parsedParams;
+  
+}
+
+/*
+ * Combine details of contacts to merge by parameters, include original parameters
+ *
+ * @param {JSON} parameters The parameters to update, must have mergeWithId and deleteId at a minimum
+ * @return {JSON} Updated parameters
+ */
+function getCombinedContacts(parameters){
+  
+  var mergeWithId = parameters.mergeWithId;
+  var mergeWithName = parameters.mergeWithName;
+  var deleteId = parameters.deleteId;
+  var updateContactParameters = combineContactParameters(mergeWithId, deleteId);
+  for(var i in updateContactParameters){
+    parameters[i] = updateContactParameters[i];
+  }
+  return parameters;
+}
+
+/* 
+ * Parse contact details into dictionary containing variables to be displayed in update contact page
+ * 
+ * @param {JSON} contactDetails The response from pipedrive get person
+ * @return {JSON} parsed response with only relevant variables
+ */
 function getUpdateContactParameters(contactDetails){
   var updateContactParameters = {
     "name" : (contactDetails.name || ""),

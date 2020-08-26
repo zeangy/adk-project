@@ -93,6 +93,7 @@ function buildAddContactCard(e){
   
   parameters = updatePrimary(parameters, formInput); 
   
+  
   var card = CardService.newCardBuilder().setHeader(CardService.newCardHeader()
     .setTitle(title)
     .setSubtitle(subtitle)
@@ -117,9 +118,13 @@ function buildAddContactCard(e){
   
   if(isMerge){
     name.setHint((parameters.deleteName || ""));
+    var ownerSelectionInput = getOwnerIdDropdown(parameters.owner_id);
   }
   
   section.addWidget(name);
+  if(ownerSelectionInput){
+    section.addWidget(ownerSelectionInput);
+  }
   
   var emailWidgets = getTextWidgetsByParameters(parameters, "email");
   for (var i in emailWidgets){
@@ -224,6 +229,7 @@ function addPipedriveContact(e){
     if(mergeResponse.success){
       message = "Merged and ";
       e.commonEventObject.parameters["pipedriveId"] = parameters.mergeWithId;
+      e.commonEventObject.parameters["reload"] = "true";
     }
     else{
       message = "Merge Failed. ";
@@ -300,7 +306,7 @@ function getOwnerIdDropdown(currentUserId){
   }
   var widget = CardService.newSelectionInput()
     .setFieldName("owner_id")
-    .setTitle("Entry Owner")
+    .setTitle("Contact Owner")
     .setType(CardService.SelectionInputType.DROPDOWN);
   for(var user in userDic){
     widget.addItem(user, userDic[user], userDic[user] == currentUserId);
@@ -623,29 +629,9 @@ function buildAddPipedriveActivitiesCard(e){
  */
 function mergePersonsCard(e){
   var parameters = e.commonEventObject.parameters;
-  var mergeWithId = parameters.mergeWithId;
-  var mergeWithName = parameters.mergeWithName;
-  var deleteId = parameters.deleteId;
-  var deleteName = parameters.deleteName;
-  var ownerId = parameters.ownerId;
-  var card = CardService.newCardBuilder()
-    .setHeader(CardService.newCardHeader()
-    .setTitle("Merge Contact "+deleteId+" with "+mergeWithId)
-    .setSubtitle(deleteName+" --> "+mergeWithName)
-    .setImageUrl(IMAGES.PIPEDRIVE));
+
+  e.commonEventObject.parameters = getCombinedContacts(parameters);
   
-  var section = CardService.newCardSection();
-  
-  var ownerSelectionInput = getOwnerIdDropdown(ownerId);
-  section.addWidget(ownerSelectionInput);
-  section.addWidget(CardService.newTextParagraph().setText("<a href='https://neighbourhoodholdings-originations.pipedrive.com/person/"+mergeWithId+"'>Person 1 Page</a>"));
-  section.addWidget(CardService.newTextParagraph().setText("<a href='https://neighbourhoodholdings-originations.pipedrive.com/person/"+deleteId+"'>Person 2 Page</a>"));
-  card.addSection(section);
-  var actionResponse = CardService.newActionResponseBuilder()
-    .setNavigation(CardService.newNavigation()
-       .pushCard(card.build()))
-    .build();
-    
   return buildAddContactCard(e);
 }
 
