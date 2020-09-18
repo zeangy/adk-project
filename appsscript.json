@@ -18,7 +18,7 @@
   "runtimeVersion": "V8",
   "addOns": {
     "common": {
-      "name": "Lendesk Portal",
+      "name": "Origination Add-On",
       "logoUrl": "http://files.conconi.ca/lendesk_logo.png",
       "layoutProperties": {
         "primaryColor": "#4285F4",

@@ -483,8 +483,6 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   var status = response.status.name;
   var closingDate = response.loans[0].funding_date;
   var amount = response.loans[0].liability.credit_limit;
-  var interestRate = response.loans[0].liability.initial_interest_rate;
-  var formattedInterestRate = (interestRate ? formatPercent(interestRate) : "");
   
   var ltv = response.loans[0].cltv;
   
@@ -495,14 +493,22 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   
   var collateral_list = response["loans"][0]["collateral"];
   
-  var lenderFee = "0";
+  var interestRate = response.loans[0].liability.initial_interest_rate;
+  
+  var lenderFee = 0;
   var fees = response.loans[0].fees;
   for (var i in fees){
-    if (fees[i].name == "Lender Fee"){
-      lenderFee = fees[i].funds_required/amount;
+    if(fees[i].name == "Lender Fee"){
+      lenderFee += fees[i].funds_required/amount;
+    }
+    else if(fees[i].name == "Rate Buydown Cost"){
+      var buydown_rate =  fees[i].funds_required/amount;
+      interestRate -= buydown_rate;
+      lenderFee += buydown_rate;
     }
   }
-  var formattedLenderFee = (lenderFee ? formatPercent(lenderFee) : "");
+  var formattedInterestRate = (interestRate ? formatPercent(interestRate) : "");
+  var formattedLenderFee = (lenderFee ? formatPercent(lenderFee) : "0");
   
   var tasks = response.tasks; //.filter(function removePipelineNote(x){return x.assignee_id != LendeskAPILibrary.PIPELINE_NOTE_ID});
   
