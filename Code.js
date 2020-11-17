@@ -493,7 +493,8 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   
   var collateral_list = response["loans"][0]["collateral"];
   
-  var interestRate = response.loans[0].liability.initial_interest_rate;
+  var initialRate = response.loans[0].liability.initial_interest_rate;
+  var interestRate = initialRate;
   
   var lenderFee = 0;
   var fees = response.loans[0].fees;
@@ -509,6 +510,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
   }
   var formattedInterestRate = (interestRate ? formatPercent(interestRate) : "");
   var formattedLenderFee = (lenderFee ? formatPercent(lenderFee) : "0");
+  var registeredRate = (interestRate == initialRate ? "" : formatPercent(initialRate));
   
   var tasks = response.tasks; //.filter(function removePipelineNote(x){return x.assignee_id != LendeskAPILibrary.PIPELINE_NOTE_ID});
   
@@ -655,7 +657,7 @@ function buildApplicationDetailsCard(e, customTitle, actionResponseBoolean){
     .setTopLabel("Loan Amount")
     .setContent((amount ? formatCurrency(amount) : "")));
   
-  var totalInterestRate = "Rate: "+formattedInterestRate+" | "+"Fee: "+formattedLenderFee;
+  var totalInterestRate = "Rate: "+formattedInterestRate+(registeredRate ? " (Reg. @"+registeredRate+")" : "")+" | "+"Fee: "+formattedLenderFee;
 
   section.addWidget(CardService.newKeyValue()
     .setTopLabel("Interest Rate and Lender Fee")
@@ -845,7 +847,10 @@ function buildQuickLinksCard(e){
   var currentStatus = (parameters.status || "");
   var duplicateSearchTerm = (parameters.duplicateSearchTerm || "");
   
-  var rateCalculatorLink = "https://script.google.com/a/macros/altmortgages.ca/s/AKfycbz-4g3tn2CA9U_E3S484ifOYtLIJ2Q_BfPqymtaCPUxVZIfzoc/exec?ID="+applicationId+"&User="+getUserName()//renderEmailTemplate(applicationId, "b6b098e2-6dc3-4593-a095-2607a3d16cdb").rendered_body;
+  var alphaId = "AKfycbz-4g3tn2CA9U_E3S484ifOYtLIJ2Q_BfPqymtaCPUxVZIfzoc";
+  var betaId = "AKfycbwOTfWnfi-m6FT1IKZiZGI5215X8V0_lgFv-kQ3adXNUlGth5c";
+  
+  var rateCalculatorLink = "https://script.google.com/a/macros/altmortgages.ca/s/"+betaId+"/exec?ID="+applicationId+"&User="+getUserName()//renderEmailTemplate(applicationId, "b6b098e2-6dc3-4593-a095-2607a3d16cdb").rendered_body;
   //rateCalculatorLink = rateCalculatorLink.replace(/<!--[\s\S]*?-->/g, "").replace(/\&amp\;/g, "&");
   //rateCalculatorLink = rateCalculatorLink.replace(/User\=.*/, "User="+getUserName());
   
@@ -882,7 +887,7 @@ function buildQuickLinksCard(e){
       .setFunctionName("buildQuickLinksCard")
       .setParameters({'applicationId':applicationId, 'reload':"true"})));
       */
-  var cutoff = 1400;
+  var cutoff = 1300;
   if(applicantGoogleSearchLink.length > cutoff){
     applicantGoogleSearchLink = applicantGoogleSearchLink.substring(0, cutoff);
     section.addWidget(CardService.newTextParagraph().setText("<b>**URL too long, link has been truncated**</b>"));
