@@ -51,7 +51,8 @@ var ADD_ON_USERS = [
   "Valerie",
   "Thibaut",
   "Karim",
-  "Lisa"
+  "Lisa", 
+  "Roxanne"
 ];
 
 var LENDESK_USERS = {
@@ -96,6 +97,12 @@ var LENDESK_USERS = {
     "team" : "underwriting",
     "colour" : "#002a61", 
     "id" : "53b1d499-abf8-4567-9f20-5ce128624910"
+  },
+  "Roxanne" : {
+    "name" : "Roxanne",
+    "team" : "underwriting",
+    "colour" : "#002a61", 
+    "id" : "9ca9cf29-86ce-452a-9c16-d0c437ecd011"
   },
   "default" : {
     "name" : "Unknown User",
