@@ -170,10 +170,10 @@ function composeFromTemplate(e){
   
   if(draftType == "reply" && e.gmail && e.gmail.messageId){    
     var message = GmailApp.getMessageById(e.gmail.messageId);
-    draft = message.createDraftReplyAll("", {htmlBody:rendered_body, from:EMAIL});
+    draft = message.createDraftReplyAll("", {htmlBody:rendered_body, from:EMAIL, bcc: "instructions@neighbourhoodholdings.com"});
   }
   else{
-    draft = GmailApp.createDraft((e.parameters["email"] ? e.parameters["email"] : ""), rendered_subject, "", {htmlBody:rendered_body, from:EMAIL});
+    draft = GmailApp.createDraft((e.parameters["email"] ? e.parameters["email"] : ""), rendered_subject, "", {htmlBody:rendered_body, from:EMAIL, bcc:"instructions@neighbourhoodholdings.com"});
   }
   
   var actionResponse = null;
