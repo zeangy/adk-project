@@ -1,0 +1,77 @@
+{
+  "timeZone": "America/Los_Angeles",
+  "dependencies": {
+    "libraries": [{
+      "userSymbol": "LendeskAPILibrary",
+      "libraryId": "1vQVldPNzgY24feNNiQmu7t8OsUI4N0DBCW00hrgKrzT_xzJojRfpV90M",
+      "version": "83",
+      "developmentMode": true
+    }, {
+      "userSymbol": "PipedriveAPILibrary",
+      "libraryId": "1RYwLwy2DopT0FXSKz1GqcJFDrNhxWv3P_TZYUuYaOay_dkjU0p4oVBjr",
+      "version": "19",
+      "developmentMode": true
+    }]
+  },
+  "oauthScopes": ["https://www.googleapis.com/auth/gmail.addons.execute", "https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.compose", "https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/documents", "https://www.googleapis.com/auth/drive", "https://www.googleapis.com/auth/script.external_request", "https://www.googleapis.com/auth/script.storage", "https://www.googleapis.com/auth/cloud-platform", "https://www.googleapis.com/auth/datastore", "https://www.googleapis.com/auth/userinfo.email"],
+  "urlFetchWhitelist": ["https://api.lendesk.com/", "https://script.google.com/", "https://www.googleapis.com/","https://www.api.pipedrive.com/"],
+  "runtimeVersion": "V8",
+  "addOns": {
+    "common": {
+      "name": "Origination Add-On",
+      "logoUrl": "http://files.conconi.ca/lendesk_logo.png",
+      "layoutProperties": {
+        "primaryColor": "#4285F4",
+        "secondaryColor": "#4285F4"
+      },
+      "homepageTrigger": {
+        "runFunction": "buildGeneralSearchCard"
+      },
+      "universalActions": [{
+        "label": "Main Menu",
+        "runFunction": "returnToMainMenu"
+      }, {
+        "label": "My Active Deals",
+        "runFunction": "returnToMyDeals"
+      }, {
+        "label": "Pipeline Applications List",
+        "runFunction": "returnToPipeline"
+      }, {
+        "label": "Location Search",
+        "runFunction": "locationSearchCard"
+      }, {
+        "label": "Send for Approval",
+        "runFunction": "getApprovalApplications"
+      }, {
+        "label": "Expiring Offers",
+        "runFunction": "getExpiredCommitmentApplications"
+      }, {
+        "label": "General Search",
+        "runFunction": "buildGeneralSearchCard"
+      }, {
+        "label": "Application Search",
+        "runFunction": "returnToSearch"
+      }, {
+        "label": "Broker Search",
+        "runFunction": "buildPipedrivePersonSearchCard"
+      }, {
+        "label": "Create Contact",
+        "runFunction": "buildAddContactCard"
+      }, {
+        "label": "Record Decline",
+        "runFunction": "buildAddOutsideLendingCard"
+      }],
+      "openLinkUrlPrefixes": ["https://mail.google.com/", "https://app.lendesk.com/", "https://script.google.com/", "https://neighbourhoodholdings-originations.pipedrive.com/"]
+    },
+    "gmail": {
+      "homepageTrigger": {
+        "runFunction": "buildGeneralSearchCard"
+      }
+    },
+    "drive": {
+      "homepageTrigger": {
+        "runFunction": "buildGeneralSearchCard"
+      }
+    }
+  }
+}
